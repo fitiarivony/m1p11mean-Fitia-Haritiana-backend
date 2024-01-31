@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  form(action="/quotes" method="POST")
+    input(type="text" name='name' placeholder="name")
+    input(type="text" name="quote" placeholder="quote")
+    button(type="submit") Submit
