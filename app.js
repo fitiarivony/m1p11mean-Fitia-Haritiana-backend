@@ -1,20 +1,27 @@
 const dotenv = require('dotenv').config();
 var express = require("express");
-const connection = require("./db");
-
 const bodyParser = require("body-parser");
-var cors = require('cors')
+
+
 var DogRouter = require('./routes/dogs');
+var EmployeRouter=require('./routes/employeController');
+
 var ManagerRouter = require('./routes/manager');
-// var ServicesRouter=require('./routes/service');
+
+
 var app = express();
-app.use(cors());
+
 app.use(bodyParser.json()); //Fanekena anle format JSON
 app.use(express.json());
-
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Autoriser toutes les origines (à ajuster en production)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 app.use('/dogs', DogRouter);
 app.use('/managers', ManagerRouter);
-// app.use('/services', ServicesRouter);
+app.use('/emp', EmployeRouter);
 
 app.listen(process.env.PORT, function () {
   console.log("Example app listening on port "+process.env.PORT);
