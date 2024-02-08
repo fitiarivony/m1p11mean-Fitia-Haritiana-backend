@@ -21,7 +21,6 @@ router.use(async function (req, res, next) {
 });
 
 router.get("/", async (req, res) => {
-  console.log("hellooo world!");
   try {
     let manager = req.query;
     console.log(req.mdp_hash);
@@ -36,13 +35,11 @@ router.get("/", async (req, res) => {
       sha1Hash.update(login._id+Date.now());
       let token=new Token({ date_expiration: daty,token:sha1Hash.digest('hex'),id_admin:login._id }) 
       await token.save();
-      // connection.closeConnection();
       return res.status(200).json({code:true,admin:login,token:token});
     }
     return res.status(500).json({code:false});
   } catch (error) {
     console.log("Erreur");
-    // Gestion des erreurs
     return res.status(500).json(error.message);
   }
 });
