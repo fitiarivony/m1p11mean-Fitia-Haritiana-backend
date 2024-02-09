@@ -7,6 +7,7 @@ var DogRouter = require('./routes/dogs');
 var EmployeRouter=require('./routes/employeController');
 
 var ManagerRouter = require('./routes/manager');
+var ServicesRouter=require('./routes/service');
 
 
 var app = express();
@@ -22,6 +23,7 @@ app.use((req, res, next) => {
 app.use('/dogs', DogRouter);
 app.use('/managers', ManagerRouter);
 app.use('/emp', EmployeRouter);
+app.use('/services', ServicesRouter);
 
 app.listen(process.env.PORT, function () {
   console.log("Example app listening on port "+process.env.PORT);
