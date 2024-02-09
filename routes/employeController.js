@@ -30,6 +30,10 @@ router.get('/', async (req, res) => {
   connection.openConnection()
   return res.status(200).json(await models.Employe.getAll())
 })
+router.get('/names', async (req, res) => {
+  connection.openConnection()
+  return res.status(200).json(await models.Employe.getNames())
+})
 router.get('/:id', async (req, res) => {
   connection.openConnection()
   let id = req.params.id

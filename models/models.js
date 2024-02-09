@@ -69,8 +69,12 @@ EmployeSchema.methods = {
   },
 }
 EmployeSchema.statics.getAll = function () {
-  return this.find({}).populate('genre').exec();
+  return this.find({}).select('-password').populate('genre').exec();
 };
+EmployeSchema.statics.getNames = function () {
+  return this.find({}).select('_id nom prenom').exec();
+};
+
 const Employe = mongoose.model('Employe', EmployeSchema)
 
 module.exports = { Dog, Employe }

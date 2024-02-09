@@ -1,6 +1,7 @@
 const dotenv = require('dotenv').config();
 var express = require("express");
 const bodyParser = require("body-parser");
+const connection = require('./db')
 
 
 var DogRouter = require('./routes/dogs');
