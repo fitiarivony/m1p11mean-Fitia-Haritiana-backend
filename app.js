@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 
 var DogRouter = require('./routes/dogs');
 var EmployeRouter=require('./routes/employeController');
-
+var GenreRouter=require('./routes/GenreController');
 var ManagerRouter = require('./routes/manager');
 var ServicesRouter=require('./routes/service');
 
@@ -23,6 +23,7 @@ app.use((req, res, next) => {
 app.use('/dogs', DogRouter);
 app.use('/managers', ManagerRouter);
 app.use('/emp', EmployeRouter);
+app.use('/genre', GenreRouter);
 app.use('/services', ServicesRouter);
 
 app.listen(process.env.PORT, function () {
