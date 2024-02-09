@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Genre = require('./genre')
 
 const DogSchema = new mongoose.Schema({
   name: {
@@ -24,14 +25,21 @@ const Dog = mongoose.model('Dog', DogSchema)
 
 const EmployeSchema = new mongoose.Schema(
   {
-    nom_employe: { type: String, default: '', trim: true, maxlength: 400 },
     identifiant: { type: String, default: '', trim: true, maxlength: 400 },
-    mdp: { type: String, default: '', trim: true, maxlength: 400 }
+    mdp: { type: String, default: '', trim: true, maxlength: 400 },
+    dateDeNaissance:{type: Date, default: Date.now},
+    nom: { type: String, default: '', trim: true, maxlength: 400 },
+    numeroCIN: { type: String, default: '', trim: true, maxlength: 12 },
+    prenom: { type: String, default: '', trim: true, maxlength: 400 },
+    genre:{ type:mongoose.Schema.Types.ObjectId, ref: 'Genre'}
   },
   { collection: 'employe' }
 )
 
-EmployeSchema.path('nom_employe').required(true, "L'employé doit avoir un nom")
+EmployeSchema.path('nom').required(true, "L'employé doit avoir un nom")
+EmployeSchema.path('prenom').required(true, "L'employé doit avoir un prenom")
+EmployeSchema.path('dateDeNaissance').required(true, "L'employé doit avoir une date de naissance")
+EmployeSchema.path('numeroCIN').required(true, "L'employé doit avoir un numéro de CIN")
 EmployeSchema.path('identifiant').required(
   true,
   "l'identifiant ne peut pas être vide"
@@ -58,8 +66,11 @@ EmployeSchema.methods = {
       console.log('Login failed. Incorrect identifier or password.')
       throw new Error('Login erroné')
     }
-  }
+  },
 }
+EmployeSchema.statics.getAll = function () {
+  return this.find({}).populate('genre').exec();
+};
 const Employe = mongoose.model('Employe', EmployeSchema)
 
 module.exports = { Dog, Employe }

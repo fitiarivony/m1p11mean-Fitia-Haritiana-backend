@@ -1,4 +1,4 @@
-const Dog = require("../models");
+const Dog = require("../models/models");
 const connection=require('../db');
 var express = require('express');
 var router = express.Router();
