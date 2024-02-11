@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const Genre = require('./genre')
-
+const Service = require('./service_model')
 const DogSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -31,7 +31,8 @@ const EmployeSchema = new mongoose.Schema(
     nom: { type: String, default: '', trim: true, maxlength: 400 },
     numeroCIN: { type: String, default: '', trim: true, maxlength: 12 },
     prenom: { type: String, default: '', trim: true, maxlength: 400 },
-    genre:{ type:mongoose.Schema.Types.ObjectId, ref: 'Genre'}
+    genre:{ type:mongoose.Schema.Types.ObjectId, ref: 'Genre'},
+    services:{type:[mongoose.Schema.Types.ObjectId], ref: 'Service'}
   },
   { collection: 'employe' }
 )

@@ -61,7 +61,7 @@ router.put('/:id', async (req, res) => {
     { runValidators: true }
   )
 
-  return res.status(200).json('Employé enregistré')
+  return res.status(200).json(result)
 })
 router.delete('/:id', async (req, res) => {
   connection.openConnection()
