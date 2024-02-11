@@ -30,6 +30,17 @@ router.get('/', async (req, res) => {
   connection.openConnection()
   return res.status(200).json(await models.Employe.getAll())
 })
+router.get('/favs', async (req, res) => {
+  return res.status(200).json(["65bb5a74739acd602b1add49"])
+})
+
+router.get('/names', async (req, res) => {
+  connection.openConnection()
+  return res
+    .status(200)
+    .json(await models.Employe.find({}).select('nom prenom').exec())
+})
+
 router.get('/:id', async (req, res) => {
   connection.openConnection()
   let id = req.params.id
@@ -60,7 +71,7 @@ router.put('/:id', async (req, res) => {
     { $set: req.body },
     { runValidators: true }
   )
-  let result=await models.Employe.findById(id)
+  let result = await models.Employe.findById(id)
 
   return res.status(200).json(result)
 })
@@ -72,3 +83,4 @@ router.delete('/:id', async (req, res) => {
   return res.status(200).json('Employé enregistré')
 })
 module.exports = router
+
