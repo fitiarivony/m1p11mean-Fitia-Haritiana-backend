@@ -60,6 +60,7 @@ router.put('/:id', async (req, res) => {
     { $set: req.body },
     { runValidators: true }
   )
+  let result=await models.Employe.findById(id)
 
   return res.status(200).json(result)
 })
