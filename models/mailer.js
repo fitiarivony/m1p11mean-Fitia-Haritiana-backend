@@ -7,8 +7,8 @@ const transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-    user: 'remaide.mzara@gmail.com',
-    pass: 'yhma nfve fmyc sics'
+    user: process.env.auth.user,
+    pass: process.env.auth.pass
   },
   tls: {
     rejectUnauthorized: false // Disable SSL certificate verification
