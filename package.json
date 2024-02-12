@@ -7,7 +7,8 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "jade": "^1.11.0",
-    "mongoose": "^8.1.1"
+    "mongoose": "^8.1.1",
+    "nodemailer": "^6.9.9"
   },
   "scripts": {
     "watch": "nodemon app.js"
