@@ -27,20 +27,35 @@ const EmployeSchema = new mongoose.Schema(
   {
     identifiant: { type: String, default: '', trim: true, maxlength: 400 },
     mdp: { type: String, default: '', trim: true, maxlength: 400 },
-    dateDeNaissance:{type: Date, default: Date.now},
+    dateDeNaissance: { type: Date, default: Date.now },
     nom: { type: String, default: '', trim: true, maxlength: 400 },
     numeroCIN: { type: String, default: '', trim: true, maxlength: 12 },
     prenom: { type: String, default: '', trim: true, maxlength: 400 },
-    genre:{ type:mongoose.Schema.Types.ObjectId, ref: 'Genre'},
-    services:{type:[mongoose.Schema.Types.ObjectId], ref: 'Service'}
+    genre: { type: mongoose.Schema.Types.ObjectId, ref: 'Genre' },
+    services: { type: [mongoose.Schema.Types.ObjectId], ref: 'Service' },
+    horaire: {
+      type: [
+        {
+          jour: Number,
+          debut: String,
+          fin: String 
+        }
+      ]
+    }
   },
   { collection: 'employe' }
 )
 
 EmployeSchema.path('nom').required(true, "L'employé doit avoir un nom")
 EmployeSchema.path('prenom').required(true, "L'employé doit avoir un prenom")
-EmployeSchema.path('dateDeNaissance').required(true, "L'employé doit avoir une date de naissance")
-EmployeSchema.path('numeroCIN').required(true, "L'employé doit avoir un numéro de CIN")
+EmployeSchema.path('dateDeNaissance').required(
+  true,
+  "L'employé doit avoir une date de naissance"
+)
+EmployeSchema.path('numeroCIN').required(
+  true,
+  "L'employé doit avoir un numéro de CIN"
+)
 EmployeSchema.path('identifiant').required(
   true,
   "l'identifiant ne peut pas être vide"
@@ -58,8 +73,7 @@ EmployeSchema.methods = {
       if (res.mdp === this.mdp) {
         console.log('Login successful!')
         return 'Login successful!'
-      }
-      else{
+      } else {
         // return 'Mot de passe éronné'
         throw new Error('Mot de passe éronné')
       }
@@ -67,11 +81,11 @@ EmployeSchema.methods = {
       console.log('Login failed. Incorrect identifier or password.')
       throw new Error('Login erroné')
     }
-  },
+  }
 }
 EmployeSchema.statics.getAll = function () {
-  return this.find({}).populate('genre').exec();
-};
+  return this.find({}).populate('genre').exec()
+}
 const Employe = mongoose.model('Employe', EmployeSchema)
 
 module.exports = { Dog, Employe }
