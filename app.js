@@ -18,6 +18,7 @@ var app = express()
 app.use(bodyParser.json()) //Fanekena anle format JSON
 app.use(express.json())
 app.use((req, res, next) => {
+
   res.setHeader('Access-Control-Allow-Origin', '*') // Autoriser toutes les origines (à ajuster en production)
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, authorization')
@@ -31,6 +32,7 @@ app.use('/services', ServicesRouter)
 app.use('/clients', ClientRouter)
 app.use('/offres', OffreRouter)
 app.use('/rdv', RdvRouter)
+
 
 app.listen(process.env.PORT, function () {
   console.log('Example app listening on port ' + process.env.PORT)
