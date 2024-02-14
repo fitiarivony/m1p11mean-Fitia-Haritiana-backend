@@ -39,6 +39,13 @@ router.post('/sign-in', async (req, res) => {
     return res.status(500).json(error.message)
   }
 })
+router.get('/names', async (req, res) => {
+  // connection.openConnection()  
+  return res
+    .status(200)
+    .json(await client.find({}).select('nom_client prenom_client').exec())
+})
+
 router.get('/fav-emps/:id', async (req, res) => {
   // console.log(req.params.id);
   let cl = await client.findById(req.params.id).exec()  
