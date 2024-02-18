@@ -38,6 +38,15 @@ const rdvSchema = mongoose.Schema(
           type: Date,
           required: true,
         },
+        is_done:{
+          type: Boolean,
+          required: true,
+          default: false,
+        },
+        prix:{
+          type:Number,
+          required: true,
+        }
       },
     ],
   },
@@ -71,7 +80,7 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
         essai.date_rdv = new Date(date_rdv);
         essai.id_client = rdv.id_client;
         newData.push(essai);
-        total+=service.prix*(service.comission/100)
+        if(rdv_service.is_done)total+=essai.prix*(service.comission/100)
       }
       
       date_rdv.setMinutes(date_rdv.getMinutes() + service.duree);
@@ -82,7 +91,7 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
   }
   console.log("Total=",total)
   newData.sort((a, b) => b.date_rdv - a.date_rdv);
-  return newData;
+  return {data:newData,total:total};
 };
 rdvSchema.statics.check_dispo=async function (rdv_services) {
   let rdv_model = mongoose.model("rdv", rdvSchema);
@@ -134,6 +143,7 @@ rdvSchema.methods = {
         fin.setMinutes(fin.getMinutes()+service.duree);
         this.rdv_service[i].datedebut=debut;
         this.rdv_service[i].datefin=fin;
+        this.rdv_service[i].prix=service.prix;
         console.log("Date debut",date,"Date fin",fin);
         console.log(this)
       }else{
