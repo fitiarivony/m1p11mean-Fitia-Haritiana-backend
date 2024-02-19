@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
       daty.setHours(daty.getHours()+1);
       const sha1Hash = crypto.createHash('sha1');
       sha1Hash.update(login._id+Date.now());
-      let token=new Token({ date_expiration: daty,token:sha1Hash.digest('hex'),id_admin:login._id }) 
+      let token=new Token({ date_expiration: daty,token:sha1Hash.digest('hex'),id_admin:login._id,statut:1 }) 
       await token.save();
       return res.status(200).json({code:true,admin:login,token:token});
     }

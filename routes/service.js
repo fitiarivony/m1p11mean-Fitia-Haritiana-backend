@@ -18,22 +18,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.use(async function(req, res, next) {
-  if (!req.headers.authorization) {
-    return res.status(403).json({ error: 'No credentials sent!' });
-  }
-  let token_hash=req.headers.authorization.split(' ')[1];
-  let now=new Date();
-  let token= await Token.findOne({token: token_hash,date_expiration:{$gte:(now) }});
-  console.log(token);
-  if (!token)return res.status(403).json({ error: 'No credentials sent!' }); 
-  next();
-  
-});
-
-
 router.post('/',async (req, res) => {
     try {
+      const token = new Token();
+      await token.authenticate(req.headers.authorization, 1);
       const { _id, ...body } = req.body;
         console.log(body);
        let new_service=new Service(body);
@@ -46,6 +34,8 @@ router.post('/',async (req, res) => {
 
 router.put('/:id_service',async function (req, res) {
   try {
+    const token = new Token();
+      await token.authenticate(req.headers.authorization, 3);
     await Service.findByIdAndUpdate(req.params.id_service,{$set:req.body},{runValidators:true})
     return res.status(200).json({code:true })
   } catch (error) {
@@ -55,6 +45,8 @@ router.put('/:id_service',async function (req, res) {
 
 router.delete('/:id_service',async function (req, res){
   try {
+    const token = new Token();
+      await token.authenticate(req.headers.authorization, 3);
     await Service.findByIdAndDelete(req.params.id_service)
     return res.status(200).json({code:true});
   } catch (error) {
@@ -65,6 +57,8 @@ router.delete('/:id_service',async function (req, res){
 
 router.get('/:id_service', async function(req, res) {
   try {
+    const token = new Token();
+      await token.authenticate(req.headers.authorization, 3);
     let service=await Service.findById(req.params.id_service);
     return res.status(200).json(service);
   } catch (error) {
