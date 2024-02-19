@@ -95,6 +95,20 @@ router.post('/dispo', async function (req, res) {
     res.status(500).json(error.message);
   }
 })
+router.post("/suivi-tache", async function (req, res) {
+  let body = req.body;
+  try {
+   await  rdv.updateOne({
+      _id: body.id_rdv,
+      "rdv_service.id_employe": body.id_employe,
+      "rdv_service.id_service": body.id_service,
+    },{ $set: { 'rdv_service.$.is_done': body.value }});
+    return res.status(200).json(true);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(error.message);
+  }
+});
 
 
 module.exports = router;
