@@ -2,7 +2,7 @@ const crypto = require('crypto')
 var express = require('express')
 const client = require('../models/client')
 var router = express.Router()
-
+var Rdv=require('../models/rdv')
 router.use(async function (req, res, next) {
   if (req.body.mdp || req.query.mdp) {
     let password = req.body.mdp || req.query.mdp
@@ -38,6 +38,18 @@ router.post('/sign-in', async (req, res) => {
   } catch (error) {
     return res.status(500).json(error.message)
   }
+})
+router.get('/names', async (req, res) => {
+  // connection.openConnection()  
+  return res
+    .status(200)
+    .json(await client.find({}).select('nom_client prenom_client').exec())
+})
+router.get('/histo/:id', async (req, res)=>{
+  console.log("niditra");
+  let rdv=await Rdv.find({id_client:req.params.id}).populate('rdv_service.id_service').exec()
+  console.log(rdv);
+  return res.status(200).json(rdv)
 })
 router.get('/fav-emps/:id', async (req, res) => {
   // console.log(req.params.id);
