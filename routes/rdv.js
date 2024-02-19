@@ -103,13 +103,24 @@ router.get("/today", async function (req, res) {
 // })
 router.post('/dispo', async function (req, res) {
   try {
-    await rdv.check_dispo(req.body.rdv_service);
+    await rdv.check_dispo(req.body.rdv_service,undefined);
     return res.status(200).json(true);
   } catch (error) {
     console.error(error)
     res.status(500).json(error.message);
   }
 })
+
+router.post('/dispo/:id_rdv', async function (req, res) {
+  try {
+    await rdv.check_dispo(req.body.rdv_service,req.params.id_rdv);
+    return res.status(200).json(true);
+  } catch (error) {
+    console.error(error)
+    res.status(500).json(error.message);
+  }
+})
+
 router.post("/suivi-tache", async function (req, res) {
   let body = req.body;
   try {
@@ -136,6 +147,38 @@ router.delete("/:id_rdv",async function(req, res) {
     res.status(500).json(error.message);
   }
 })
-
+router.get('/:id_rdv',async function (req, res) {
+    try {
+      
+      const token = new Token();
+    let client=await token.authenticate(req.headers.authorization, 3);
+    let rendezvous =await rdv.findById(req.params.id_rdv);
+    let data = {
+      employe:  await rdv.getEmpPref(client.id_admin),
+      service: await rdv.getServicePref(client.id_admin),
+      rdv:rendezvous
+    };
+    
+    return res.status(200).json(data);
+    } catch (error) {
+      console.error(error);
+    res.status(500).json(error.message);
+    }
+})
+router.put('/:id_rdv',async function(req, res) {
+  try {
+    const token = new Token();
+    const client = await token.authenticate(req.headers.authorization, 3);
+    let rendez_vous = req.body;
+    if(rendez_vous.id_client !== client.id_admin && rendez_vous.id_rdv!==req.params.id_rdv) return res.status(500).json("You're not allowed to do this action");
+    let new_rdv = new rdv(rendez_vous);
+    await new_rdv.update_emp(req.params.id_rdv);
+    return res.status(200).json("Coucou");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(error.message);
+     
+  }
+})
 
 module.exports = router;

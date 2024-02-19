@@ -94,8 +94,23 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
   console.log("Total=",total)
   return {data:newData,total:total};
 };
-rdvSchema.statics.check_dispo=async function (rdv_services) {
+rdvSchema.statics.check_dispo=async function (rdv_services,id_rdv) {
   let rdv_model = mongoose.model("rdv", rdvSchema);
+  if(!rdv){
+    for (const rdv_service of rdv_services) {
+      let rdv_daty = await rdv_model.find({
+        'rdv_service.id_employe': rdv_service.id_employe,
+        'rdv_service.datedebut': {
+          $lt: rdv_service.datefin
+        },
+        'rdv_service.datefin': {
+          $gt: rdv_service.datedebut
+        }
+      })
+      console.log(rdv_daty)
+      if (rdv_daty.length != 0) throw new Error('Mifanitsaka date')
+    }
+  }
   for (const rdv_service of rdv_services) {
     let rdv_daty = await rdv_model.find({
       'rdv_service.id_employe': rdv_service.id_employe,
@@ -104,12 +119,17 @@ rdvSchema.statics.check_dispo=async function (rdv_services) {
       },
       'rdv_service.datefin': {
         $gt: rdv_service.datedebut
+      },
+      _id:{
+        $ne:id_rdv,
       }
     })
     console.log(rdv_daty)
     if (rdv_daty.length != 0) throw new Error('Mifanitsaka date')
   }
 }
+
+
 rdvSchema.statics.getRdvTomorrow = async function () {
   // Calculate the start and end of tomorrow
   const today = new Date()
@@ -181,7 +201,20 @@ rdvSchema.methods = {
       throw error;
     }   
   },
-  check_horaire: async function (emps, services) {
+  update_emp: async function (id_rdv) {
+    try {
+      let services = await Service.find()
+      let emps = await Employe.find()
+      await this.check_horaire(emps, services,id_rdv)
+      let rdv_model = mongoose.model('rdv', rdvSchema)
+      await rdv.findByIdAndUpdate(id_rdv,
+        { $set: { rdv_service: this.rdv_service , date_rdv: this.date_rdv} }
+        )
+    } catch (error) {
+      throw error;
+    }   
+  },
+  check_horaire: async function (emps, services,id_rdv) {
     console.log('Check horaire')
     let date = new Date(this.date_rdv)
     for (let i = 0; i < this.rdv_service.length; i++) {
@@ -210,7 +243,7 @@ rdvSchema.methods = {
       }
 
      
-      if(await this.check_disponibilite(date, service.duree, employe.id_employe)){
+      if(await this.check_disponibilite(date, service.duree, employe.id_employe,id_rdv)){
         let fin=new Date(date);
         let debut=new Date(date)
         fin.setMinutes(fin.getMinutes()+service.duree);
@@ -227,10 +260,23 @@ rdvSchema.methods = {
     }
   },
 
-  check_disponibilite: async function (debut, duree, id_employe) {
+  check_disponibilite: async function (debut, duree, id_employe,id_rdv) {
     let fin = new Date(debut)
     fin.setMinutes(fin.getMinutes() + duree)
     let rdv_model = mongoose.model('rdv', rdvSchema)
+    if(!id_rdv){
+      let rdv_daty = await rdv_model.find({
+        'rdv_service.id_employe': id_employe,
+        'rdv_service.datedebut': {
+          $lt: fin
+        },
+        'rdv_service.datefin': {
+          $gt: debut
+        }
+      })
+      console.log(rdv_daty)
+      return rdv_daty.length == 0
+    }
     let rdv_daty = await rdv_model.find({
       'rdv_service.id_employe': id_employe,
       'rdv_service.datedebut': {
@@ -238,10 +284,14 @@ rdvSchema.methods = {
       },
       'rdv_service.datefin': {
         $gt: debut
+      },
+      _id:{
+        $ne:id_rdv,
       }
     })
     console.log(rdv_daty)
     return rdv_daty.length == 0
+    
   }
 }
 
