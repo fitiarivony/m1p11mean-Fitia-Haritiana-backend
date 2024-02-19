@@ -124,6 +124,18 @@ router.post("/suivi-tache", async function (req, res) {
     res.status(500).json(error.message);
   }
 });
+router.delete("/:id_rdv",async function(req, res) {
+  try {
+   
+    const token = new Token();
+    let client=await token.authenticate(req.headers.authorization, 3);
+    await rdv.findOneAndDelete({_id:req.params.id_rdv,id_client:client.id_admin});
+    return res.status(200).json(true);
+  }catch (error) {
+    console.error(error);
+    res.status(500).json(error.message);
+  }
+})
 
 
 module.exports = router;
