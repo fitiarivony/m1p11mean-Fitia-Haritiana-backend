@@ -44,29 +44,44 @@ router.get("/", async function (req, res) {
       { "rdv_service.id_employe": emp.id_admin },
       { __v: 0 }
     );
-    let data=await rdv.getRdvEmp(list_rdv,emp.id_admin);
+
+    let valiny = await rdv.getRdvEmp(list_rdv, emp.id_admin);
+    let data=valiny.data
+    data.sort((a, b) => b.date_rdv - a.date_rdv);
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json(error.message);
   }
 });
+
 router.get("/today", async function (req, res) {
   try {
     const token = new Token();
     let emp = await token.authenticate(req.headers.authorization, 2);
-    let today=new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    let endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()+1);
-    let list_rdv = await rdv.find({
+    let today = new Date();
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    let endOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + 1
+    );
+    let list_rdv = await rdv.get({
       "rdv_service.id_employe": emp.id_admin,
-      "date_rdv":{
+      date_rdv: {
         $gte: startOfDay,
-        $lt: endOfDay
-      } 
+        $lt: endOfDay,
+      },
     });
-    let valiny=await rdv.getRdvEmp(list_rdv,emp.id_admin)
+    let data = await rdv.getRdvEmp(list_rdv, emp.id_admin);
+    let valiny=data.data;
+    valiny.sort((a, b) => -b.date_rdv + a.date_rdv);
     // console.log(valiny);
-    return res.status(200).json(valiny);
+    
+    return res.status(200).json({rdv:valiny,total:data.total});
   } catch (error) {
     return res.status(500).json(error.message);
   }
