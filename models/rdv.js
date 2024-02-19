@@ -83,7 +83,6 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
         essai.id_client = rdv.id_client;
         newData.push(essai);
         if(rdv_service.is_done)total+=essai.prix*(service.comission/100)
-
       }
 
       date_rdv.setMinutes(date_rdv.getMinutes() + service.duree)
@@ -93,7 +92,6 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
     // newData.push(rdv_du);
   }
   console.log("Total=",total)
-  newData.sort((a, b) => b.date_rdv - a.date_rdv);
   return {data:newData,total:total};
 };
 rdvSchema.statics.check_dispo=async function (rdv_services) {

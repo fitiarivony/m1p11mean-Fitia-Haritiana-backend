@@ -35,7 +35,7 @@ router.post('/',async (req, res) => {
 router.put('/:id_service',async function (req, res) {
   try {
     const token = new Token();
-      await token.authenticate(req.headers.authorization, 3);
+      await token.authenticate(req.headers.authorization, 1);
     await Service.findByIdAndUpdate(req.params.id_service,{$set:req.body},{runValidators:true})
     return res.status(200).json({code:true })
   } catch (error) {
@@ -46,7 +46,7 @@ router.put('/:id_service',async function (req, res) {
 router.delete('/:id_service',async function (req, res){
   try {
     const token = new Token();
-      await token.authenticate(req.headers.authorization, 3);
+      await token.authenticate(req.headers.authorization, 1);
     await Service.findByIdAndDelete(req.params.id_service)
     return res.status(200).json({code:true});
   } catch (error) {
@@ -58,7 +58,7 @@ router.delete('/:id_service',async function (req, res){
 router.get('/:id_service', async function(req, res) {
   try {
     const token = new Token();
-      await token.authenticate(req.headers.authorization, 3);
+      await token.authenticate(req.headers.authorization, 1);
     let service=await Service.findById(req.params.id_service);
     return res.status(200).json(service);
   } catch (error) {

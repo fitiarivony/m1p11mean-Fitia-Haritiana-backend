@@ -29,7 +29,7 @@ tokenSchema.methods={
       let token_hash=authorization.split(' ')[1];
       let now=new Date();
       let token= await Token.findOne({token: token_hash,date_expiration:{$gte:(now) },statut:statut});
-      console.log(token);
+      console.log(token_hash,token);
       if (!token || token ==null) throw new Error('No credentials provided');
       return token;
     },
