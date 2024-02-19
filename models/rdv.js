@@ -8,36 +8,35 @@ const rdvSchema = mongoose.Schema(
   {
     id_client: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'client',
-      required: true
+      ref: "client",
+      required: true,
     },
     date_rdv: {
       type: Date,
-      required: true
+      required: true,
     },
     rdv_service: [
       {
         id_employe: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Employe',
-          required: true
+          ref: "Employe",
+          required: true,
         },
         id_service: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Service',
-          required: true
+          ref: "Service",
+          required: true,
         },
         ordre: {
           type: Number,
-          required: true
+          required: true,
         },
         datedebut: {
           type: Date,
-          required: true
+          required: true,
         },
         datefin: {
           type: Date,
-
           required: true,
         },
         is_done:{
@@ -51,13 +50,10 @@ const rdvSchema = mongoose.Schema(
         }
       },
     ],
-        }
-      }
-    ]
-
+    
   },
-  { collection: 'rdv' }
-)
+  { collection: "rdv" }
+);
 rdvSchema.statics.get = function (conditions, colonnes) {
   return this.find(conditions, colonnes)
     .populate('id_client')
