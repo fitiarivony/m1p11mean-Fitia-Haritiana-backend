@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Genre = require('./genre')
 const Service = require('./service_model')
+const Token = require('./token')
 const DogSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -72,7 +73,9 @@ EmployeSchema.methods = {
     if (res) {
       if (res.mdp === this.mdp) {
         console.log('Login successful!')
-        return 'Login successful!'
+        let token=await Token.generateToken(res._id,2)
+        console.log(token);
+        return {token:token,admin:res};
       } else {
         // return 'Mot de passe éronné'
         throw new Error('Mot de passe éronné')
