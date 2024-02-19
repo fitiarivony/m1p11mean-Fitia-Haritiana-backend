@@ -172,10 +172,14 @@ rdvSchema.statics.remindRdv = async function () {
 
 rdvSchema.methods = {
   save_emp: async function () {
-    let services = await Service.find()
-    let emps = await Employe.find()
-    await this.check_horaire(emps, services)
-    await this.save()
+    try {
+      let services = await Service.find()
+      let emps = await Employe.find()
+      await this.check_horaire(emps, services)
+      await this.save()
+    } catch (error) {
+      throw error;
+    }   
   },
   check_horaire: async function (emps, services) {
     console.log('Check horaire')
