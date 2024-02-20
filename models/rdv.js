@@ -50,7 +50,11 @@ const rdvSchema = mongoose.Schema(
         }
       },
     ],
-    
+    paye:{
+      type:Boolean,
+      required: true,
+      default: false,
+    },
   },
   { collection: "rdv" }
 );
