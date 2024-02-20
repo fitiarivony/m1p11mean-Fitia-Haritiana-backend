@@ -419,5 +419,55 @@ rdvSchema.statics.getEmpPref = async function (id_client) {
   return valiny
 }
 
+rdvSchema.statics.temps_moyen_travail=async function() {
+  try {
+    const rdvs = await rdv.find({}); // Récupérer tous les rendez-vous
+
+    const tempsTravailParEmploye = {}; // Stocker la durée de travail pour chaque employé
+    const rdvCompteurParEmploye = {};
+    rdvs.forEach((rdv) => {
+      rdv.rdv_service.forEach((service) => {
+        if (service.is_done) {
+          const tempsTravail = service.datefin - service.datedebut; // Durée de travail pour ce rendez-vous
+          if (!tempsTravailParEmploye[service.id_employe]) {
+            tempsTravailParEmploye[service.id_employe] = tempsTravail;
+            rdvCompteurParEmploye[service.id_employe] = 1;
+          } else {
+            tempsTravailParEmploye[service.id_employe] += tempsTravail;
+            rdvCompteurParEmploye[service.id_employe]++;
+          }
+        }
+      });
+    });
+
+    // Calculer le temps moyen de travail pour chaque employé
+    const tempsMoyenTravail = {};
+    for (const employeId in tempsTravailParEmploye) {
+      // Calculer la durée de travail en heures et minutes
+      let tempsTravail;
+      let diffMs= tempsTravailParEmploye[employeId] / rdvCompteurParEmploye[employeId];
+      if (diffMs >= 3600000) {
+        // Si la durée est d'au moins 1 heure (3600000 millisecondes)
+        const heures = Math.floor(diffMs / 3600000); // Calculer les heures
+        const minutes = Math.round((diffMs % 3600000) / 60000); // Calculer les minutes restantes
+        tempsTravail = `${heures} heure(s) ${minutes} minute(s)`;
+      } else {
+        // Si la durée est inférieure à 1 heure
+        const minutes = Math.ceil(diffMs / 60000); // Calculer les minutes
+        tempsTravail = `${minutes} minute(s)`;
+      }
+      tempsMoyenTravail[employeId] =tempsTravail       
+    }
+
+    return tempsMoyenTravail;
+  } catch (error) {
+    console.error(
+      "Erreur lors du calcul du temps moyen de travail par employé :",
+      error
+    );
+    throw error;
+  }
+}
+
 const rdv = mongoose.model('rdv', rdvSchema)
 module.exports = rdv

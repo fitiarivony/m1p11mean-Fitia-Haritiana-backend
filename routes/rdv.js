@@ -192,9 +192,10 @@ router.put("/payer/:id_rdv", async function (req, res) {
   try {
     const token = new Token();
     await token.authenticate(req.headers.authorization, 3);
-   let vaovao= await rdv.findByIdAndUpdate(
-     req.params.id_rdv,
-      { $set: { paye:true } },{new :true}
+    let vaovao = await rdv.findByIdAndUpdate(
+      req.params.id_rdv,
+      { $set: { paye: true } },
+      { new: true }
     );
     console.log(vaovao);
     return res.status(200).json(vaovao);
@@ -203,5 +204,20 @@ router.put("/payer/:id_rdv", async function (req, res) {
     return res.status(500).json(error.message);
   }
 });
+
+router.get("/emp/temps-moyen", function (req, res) {
+  // Exemple d'utilisation
+  console.log("Tonga ato");
+  rdv.temps_moyen_travail()
+    .then((tempsMoyenTravail) => {
+      console.log("Temps moyen de travail par employé :", tempsMoyenTravail);
+      return res.status(200).json(tempsMoyenTravail);
+    })
+    .catch((err) => {
+      console.error("Erreur :", err);
+    });
+});
+
+
 
 module.exports = router;
