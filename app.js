@@ -12,6 +12,7 @@ var ServicesRouter = require('./routes/service')
 var ClientRouter = require('./routes/client')
 var OffreRouter = require('./routes/offre_speciale_controller')
 var RdvRouter = require('./routes/rdv')
+var DepenseRouter = require('./routes/depense')
 
 var app = express()
 
@@ -32,6 +33,7 @@ app.use('/services', ServicesRouter)
 app.use('/clients', ClientRouter)
 app.use('/offres', OffreRouter)
 app.use('/rdv', RdvRouter)
+app.use('/depense', DepenseRouter)
 
 
 app.listen(process.env.PORT, function () {

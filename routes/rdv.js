@@ -3,6 +3,7 @@ var express = require("express");
 const Token = require("../models/token");
 const rdv = require("../models/rdv");
 const Service = require("../models/service_model");
+const Depense = require("../models/depense");
 var router = express.Router();
 const Employe = require("../models/models").Employe;
 router.post("/", async function (req, res) {
@@ -208,16 +209,25 @@ router.put("/payer/:id_rdv", async function (req, res) {
 router.get("/emp/temps-moyen", function (req, res) {
   // Exemple d'utilisation
   console.log("Tonga ato");
-  rdv.temps_moyen_travail()
+  rdv
+    .temps_moyen_travail()
     .then((tempsMoyenTravail) => {
       console.log("Temps moyen de travail par employé :", tempsMoyenTravail);
       return res.status(200).json(tempsMoyenTravail);
     })
     .catch((err) => {
+      return res.status(500).json(err);
       console.error("Erreur :", err);
     });
 });
 
-
+router.get("/benefice/mois",  async (req, res) => {
+  try {
+    let bilan= await rdv.benefice_mois();
+    return res.status(200).json(bilan);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+});
 
 module.exports = router;

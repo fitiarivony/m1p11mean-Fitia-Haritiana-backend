@@ -3,6 +3,7 @@ const Service = require('./service_model')
 const client = require('./client')
 const { Employe } = require('./models')
 const Mailer = require('../models/mailer')
+const Depense = require('./depense')
 
 const rdvSchema = mongoose.Schema(
   {
@@ -467,6 +468,108 @@ rdvSchema.statics.temps_moyen_travail=async function() {
     );
     throw error;
   }
+}
+rdvSchema.statics.benefice_mois= async function(){
+  try {
+    
+  
+  let result=await rdv
+    .aggregate([
+      {
+        $lookup: {
+          from: "client", // The name of the client collection
+          localField: "id_client",
+          foreignField: "_id",
+          as: "client"
+        }
+      },
+      {
+        $match: { "paye": true } // Filtrer les rendez-vous payés uniquement
+      },
+      {
+        $unwind: "$rdv_service" // unwind rdv_service array if needed
+      },
+      {
+        $lookup: {
+          from: "service", // The name of the service collection
+          localField: "rdv_service.id_service",
+          foreignField: "_id",
+          as: "rdv_service.id_service" // Storing service details in rdv_service field
+        }
+      },
+      {
+        $lookup: {
+          from: "employe", // The name of the service collection
+          localField: "rdv_service.id_employe",
+          foreignField: "_id",
+          as: "rdv_service.id_employe" // Storing service details in rdv_service field
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$date_rdv" }, // Extracting the year from date_rdv
+            month: { $month: "$date_rdv" } // Extracting the month from date_rdv
+          },
+          appointments: {
+            $push: {
+              _id: "$_id",
+              rdv_service: "$rdv_service",
+              client: "$client",
+              paye: "$paye"
+            }
+          },
+         // Counting the number of appointments
+        }
+      },
+      
+    ])
+   
+      let bilan=[];
+      // console.log(result);
+      // console.log(result[0].appointments.length);
+      for (let resultat_mois  of result) {
+        let calcul={
+          recette:0,
+          depense:0,
+          mois:resultat_mois._id.month,
+          annee:resultat_mois._id.year
+        };
+          for (const rendez_vous of resultat_mois.appointments) {
+             calcul.recette+=rendez_vous.rdv_service.prix;
+              if (rendez_vous.rdv_service.is_done) {
+                calcul.depense+=rendez_vous.rdv_service.prix*(rendez_vous.rdv_service.id_service[0].comission/100)
+              } 
+             
+      }
+      bilan.push(calcul);
+    }
+    // console.log(bilan);
+    let autre_depense=await Depense.depense_mois();
+    // console.log(autre_depense);
+    for (const depense of autre_depense) {
+     
+          let dep=bilan.filter(bil=>bil.mois === depense.month && depense.year==bil.annee)[0];
+          if(dep){
+            bilan[bilan.indexOf(dep)].autre_depense=depense.totalDepense
+          }else{
+            let new_bilan={
+              recette:0,
+              depense:0,
+              mois:depense.year,
+              annee:depense.month,
+              autre_depense:depense.totalDepense
+            }
+            bilan.push(new_bilan);
+          }
+          // console.log(dep);
+    }
+    // console.log(autre_depense);
+      // console.log(bilan);
+      return bilan;
+    } catch (error) {
+      throw error;
+    }
 }
 
 const rdv = mongoose.model('rdv', rdvSchema)
