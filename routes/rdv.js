@@ -57,6 +57,12 @@ router.get("/", async function (req, res) {
   }
 });
 
+router.get("/avg", async function (req, res) {
+  
+  return res.status(200).json(await rdv.getAvgRdv());
+  
+})
+
 router.get("/today", async function (req, res) {
   try {
     const token = new Token();
