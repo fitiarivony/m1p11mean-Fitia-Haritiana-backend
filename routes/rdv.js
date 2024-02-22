@@ -48,7 +48,10 @@ router.get("/", async function (req, res) {
     let valiny = await rdv.getRdvEmp(list_rdv, emp.id_admin);
     let data = valiny.data;
     data.sort((a, b) => b.date_rdv - a.date_rdv);
-    return res.status(200).json(data);
+    let service= await Employe.findOne({
+      _id:emp.id_admin,
+    },{_v:0}).populate('services').exec();
+    return res.status(200).json({donnee:data,service:service.services});
   } catch (error) {
     return res.status(500).json(error.message);
   }
