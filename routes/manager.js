@@ -20,9 +20,9 @@ router.use(async function (req, res, next) {
   next();
 });
 
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    let manager = req.query;
+    let manager = req.body;
     console.log(req.mdp_hash);
     const login = await Manager.findOne({
       identifiant: manager.identifiant,
