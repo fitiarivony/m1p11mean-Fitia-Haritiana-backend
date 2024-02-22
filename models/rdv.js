@@ -9,56 +9,56 @@ const rdvSchema = mongoose.Schema(
   {
     id_client: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "client",
-      required: true,
+      ref: 'client',
+      required: true
     },
     date_rdv: {
       type: Date,
-      required: true,
+      required: true
     },
     rdv_service: [
       {
         id_employe: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Employe",
-          required: true,
+          ref: 'Employe',
+          required: true
         },
         id_service: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Service",
-          required: true,
+          ref: 'Service',
+          required: true
         },
         ordre: {
           type: Number,
-          required: true,
+          required: true
         },
         datedebut: {
           type: Date,
-          required: true,
+          required: true
         },
         datefin: {
           type: Date,
-          required: true,
+          required: true
         },
-        is_done:{
+        is_done: {
           type: Boolean,
           required: true,
-          default: false,
+          default: false
         },
-        prix:{
-          type:Number,
-          required: true,
+        prix: {
+          type: Number,
+          required: true
         }
-      },
+      }
     ],
-    paye:{
-      type:Boolean,
+    paye: {
+      type: Boolean,
       required: true,
-      default: false,
-    },
+      default: false
+    }
   },
-  { collection: "rdv" }
-);
+  { collection: 'rdv' }
+)
 rdvSchema.statics.get = function (conditions, colonnes) {
   return this.find(conditions, colonnes)
     .populate('id_client')
@@ -83,11 +83,11 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
       )[0]
 
       if (rdv_service.id_employe._id.toString() == id_employe.toString()) {
-        essai.id_rdv = rdv._id;
-        essai.date_rdv = new Date(date_rdv);
-        essai.id_client = rdv.id_client;
-        newData.push(essai);
-        if(rdv_service.is_done)total+=essai.prix*(service.comission/100)
+        essai.id_rdv = rdv._id
+        essai.date_rdv = new Date(date_rdv)
+        essai.id_client = rdv.id_client
+        newData.push(essai)
+        if (rdv_service.is_done) total += essai.prix * (service.comission / 100)
       }
 
       date_rdv.setMinutes(date_rdv.getMinutes() + service.duree)
@@ -96,12 +96,12 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
     }
     // newData.push(rdv_du);
   }
-  console.log("Total=",total)
-  return {data:newData,total:total};
-};
-rdvSchema.statics.check_dispo=async function (rdv_services,id_rdv) {
-  let rdv_model = mongoose.model("rdv", rdvSchema);
-  if(!rdv){
+  console.log('Total=', total)
+  return { data: newData, total: total }
+}
+rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
+  let rdv_model = mongoose.model('rdv', rdvSchema)
+  if (!rdv) {
     for (const rdv_service of rdv_services) {
       let rdv_daty = await rdv_model.find({
         'rdv_service.id_employe': rdv_service.id_employe,
@@ -125,15 +125,14 @@ rdvSchema.statics.check_dispo=async function (rdv_services,id_rdv) {
       'rdv_service.datefin': {
         $gt: rdv_service.datedebut
       },
-      _id:{
-        $ne:id_rdv,
+      _id: {
+        $ne: id_rdv
       }
     })
     console.log(rdv_daty)
     if (rdv_daty.length != 0) throw new Error('Mifanitsaka date')
   }
 }
-
 
 rdvSchema.statics.getRdvTomorrow = async function () {
   // Calculate the start and end of tomorrow
@@ -171,10 +170,14 @@ rdvSchema.statics.remindRdv = async function () {
   let tom = await Rdv.getRdvTomorrow()
   console.log(tom)
   tom.map(rdv => {
-    let person=rdv.id_client
+    let person = rdv.id_client
     let mail = '<p>'
     mail +=
-      "Très cher(e) client(e) "+person.nom_client+" "+person.prenom_client+", n'oubliez pas votre rendez-vous prévu pour le "
+      'Très cher(e) client(e) ' +
+      person.nom_client +
+      ' ' +
+      person.prenom_client +
+      ", n'oubliez pas votre rendez-vous prévu pour le "
     let date = rdv.date_rdv
     mail = mail.concat(date.toLocaleString())
     mail = mail.concat(' pour faire ')
@@ -194,7 +197,46 @@ rdvSchema.statics.remindRdv = async function () {
   })
   //
 }
-
+rdvSchema.statics.getAvgRdv = async function () {
+  const Rdv = mongoose.model('rdv', rdvSchema)
+  console.log('niditra')
+  let resMonth = await Rdv.aggregate([
+    {
+      $group: {
+        _id: { $month: '$date_rdv' },
+        totalPrix: { $sum: { $sum: '$rdv_service.prix' } },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $group: {
+        _id: '$_id',
+        avgPrix: { $avg: '$totalPrix' },
+        avgCount: { $avg: '$count' }
+      }
+    }
+  ])
+  let result = await Rdv.aggregate([
+    {
+      $group: {
+        _id: { $dayOfWeek: '$date_rdv' },
+        totalPrix: { $sum: { $sum: '$rdv_service.prix' } },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $group: {
+        _id: '$_id',
+        avgPrix: { $avg: '$totalPrix' },
+        avgCount: { $avg: '$count' }
+      }
+    }
+  ])
+  return {
+    avgNbDay: result,
+    avgNbMonth: resMonth
+  }
+}
 rdvSchema.methods = {
   save_emp: async function () {
     try {
@@ -203,23 +245,23 @@ rdvSchema.methods = {
       await this.check_horaire(emps, services)
       await this.save()
     } catch (error) {
-      throw error;
-    }   
+      throw error
+    }
   },
   update_emp: async function (id_rdv) {
     try {
       let services = await Service.find()
       let emps = await Employe.find()
-      await this.check_horaire(emps, services,id_rdv)
+      await this.check_horaire(emps, services, id_rdv)
       let rdv_model = mongoose.model('rdv', rdvSchema)
-      await rdv.findByIdAndUpdate(id_rdv,
-        { $set: { rdv_service: this.rdv_service , date_rdv: this.date_rdv} }
-        )
+      await rdv.findByIdAndUpdate(id_rdv, {
+        $set: { rdv_service: this.rdv_service, date_rdv: this.date_rdv }
+      })
     } catch (error) {
-      throw error;
-    }   
+      throw error
+    }
   },
-  check_horaire: async function (emps, services,id_rdv) {
+  check_horaire: async function (emps, services, id_rdv) {
     console.log('Check horaire')
     let date = new Date(this.date_rdv)
     for (let i = 0; i < this.rdv_service.length; i++) {
@@ -247,15 +289,21 @@ rdvSchema.methods = {
         throw new Error('Tsy anatin horaire')
       }
 
-     
-      if(await this.check_disponibilite(date, service.duree, employe.id_employe,id_rdv)){
-        let fin=new Date(date);
-        let debut=new Date(date)
-        fin.setMinutes(fin.getMinutes()+service.duree);
-        this.rdv_service[i].datedebut=debut;
-        this.rdv_service[i].datefin=fin;
-        this.rdv_service[i].prix=service.prix;
-        console.log("Date debut",date,"Date fin",fin);
+      if (
+        await this.check_disponibilite(
+          date,
+          service.duree,
+          employe.id_employe,
+          id_rdv
+        )
+      ) {
+        let fin = new Date(date)
+        let debut = new Date(date)
+        fin.setMinutes(fin.getMinutes() + service.duree)
+        this.rdv_service[i].datedebut = debut
+        this.rdv_service[i].datefin = fin
+        this.rdv_service[i].prix = service.prix
+        console.log('Date debut', date, 'Date fin', fin)
         console.log(this)
       } else {
         console.log('Mifanitsaka date')
@@ -265,11 +313,11 @@ rdvSchema.methods = {
     }
   },
 
-  check_disponibilite: async function (debut, duree, id_employe,id_rdv) {
+  check_disponibilite: async function (debut, duree, id_employe, id_rdv) {
     let fin = new Date(debut)
     fin.setMinutes(fin.getMinutes() + duree)
     let rdv_model = mongoose.model('rdv', rdvSchema)
-    if(!id_rdv){
+    if (!id_rdv) {
       let rdv_daty = await rdv_model.find({
         'rdv_service.id_employe': id_employe,
         'rdv_service.datedebut': {
@@ -290,13 +338,12 @@ rdvSchema.methods = {
       'rdv_service.datefin': {
         $gt: debut
       },
-      _id:{
-        $ne:id_rdv,
+      _id: {
+        $ne: id_rdv
       }
     })
     console.log(rdv_daty)
     return rdv_daty.length == 0
-    
   }
 }
 
@@ -420,156 +467,155 @@ rdvSchema.statics.getEmpPref = async function (id_client) {
   return valiny
 }
 
-rdvSchema.statics.temps_moyen_travail=async function() {
+rdvSchema.statics.temps_moyen_travail = async function () {
   try {
-    const rdvs = await rdv.find({}); // Récupérer tous les rendez-vous
+    const rdvs = await rdv.find({}) // Récupérer tous les rendez-vous
 
-    const tempsTravailParEmploye = {}; // Stocker la durée de travail pour chaque employé
-    const rdvCompteurParEmploye = {};
-    rdvs.forEach((rdv) => {
-      rdv.rdv_service.forEach((service) => {
+    const tempsTravailParEmploye = {} // Stocker la durée de travail pour chaque employé
+    const rdvCompteurParEmploye = {}
+    rdvs.forEach(rdv => {
+      rdv.rdv_service.forEach(service => {
         if (service.is_done) {
-          const tempsTravail = service.datefin - service.datedebut; // Durée de travail pour ce rendez-vous
+          const tempsTravail = service.datefin - service.datedebut // Durée de travail pour ce rendez-vous
           if (!tempsTravailParEmploye[service.id_employe]) {
-            tempsTravailParEmploye[service.id_employe] = tempsTravail;
-            rdvCompteurParEmploye[service.id_employe] = 1;
+            tempsTravailParEmploye[service.id_employe] = tempsTravail
+            rdvCompteurParEmploye[service.id_employe] = 1
           } else {
-            tempsTravailParEmploye[service.id_employe] += tempsTravail;
-            rdvCompteurParEmploye[service.id_employe]++;
+            tempsTravailParEmploye[service.id_employe] += tempsTravail
+            rdvCompteurParEmploye[service.id_employe]++
           }
         }
-      });
-    });
+      })
+    })
 
     // Calculer le temps moyen de travail pour chaque employé
-    const tempsMoyenTravail = {};
+    const tempsMoyenTravail = {}
     for (const employeId in tempsTravailParEmploye) {
       // Calculer la durée de travail en heures et minutes
-      let tempsTravail;
-      let diffMs= tempsTravailParEmploye[employeId] / rdvCompteurParEmploye[employeId];
+      let tempsTravail
+      let diffMs =
+        tempsTravailParEmploye[employeId] / rdvCompteurParEmploye[employeId]
       if (diffMs >= 3600000) {
         // Si la durée est d'au moins 1 heure (3600000 millisecondes)
-        const heures = Math.floor(diffMs / 3600000); // Calculer les heures
-        const minutes = Math.round((diffMs % 3600000) / 60000); // Calculer les minutes restantes
-        tempsTravail = `${heures} heure(s) ${minutes} minute(s)`;
+        const heures = Math.floor(diffMs / 3600000) // Calculer les heures
+        const minutes = Math.round((diffMs % 3600000) / 60000) // Calculer les minutes restantes
+        tempsTravail = `${heures} heure(s) ${minutes} minute(s)`
       } else {
         // Si la durée est inférieure à 1 heure
-        const minutes = Math.ceil(diffMs / 60000); // Calculer les minutes
-        tempsTravail = `${minutes} minute(s)`;
+        const minutes = Math.ceil(diffMs / 60000) // Calculer les minutes
+        tempsTravail = `${minutes} minute(s)`
       }
-      tempsMoyenTravail[employeId] =tempsTravail       
+      tempsMoyenTravail[employeId] = tempsTravail
     }
 
-    return tempsMoyenTravail;
+    return tempsMoyenTravail
   } catch (error) {
     console.error(
-      "Erreur lors du calcul du temps moyen de travail par employé :",
+      'Erreur lors du calcul du temps moyen de travail par employé :',
       error
-    );
-    throw error;
+    )
+    throw error
   }
 }
-rdvSchema.statics.benefice_mois= async function(){
+rdvSchema.statics.benefice_mois = async function () {
   try {
-    
-  
-  let result=await rdv
-    .aggregate([
+    let result = await rdv.aggregate([
       {
         $lookup: {
-          from: "client", // The name of the client collection
-          localField: "id_client",
-          foreignField: "_id",
-          as: "client"
+          from: 'client', // The name of the client collection
+          localField: 'id_client',
+          foreignField: '_id',
+          as: 'client'
         }
       },
       {
-        $match: { "paye": true } // Filtrer les rendez-vous payés uniquement
+        $match: { paye: true } // Filtrer les rendez-vous payés uniquement
       },
       {
-        $unwind: "$rdv_service" // unwind rdv_service array if needed
+        $unwind: '$rdv_service' // unwind rdv_service array if needed
       },
       {
         $lookup: {
-          from: "service", // The name of the service collection
-          localField: "rdv_service.id_service",
-          foreignField: "_id",
-          as: "rdv_service.id_service" // Storing service details in rdv_service field
+          from: 'service', // The name of the service collection
+          localField: 'rdv_service.id_service',
+          foreignField: '_id',
+          as: 'rdv_service.id_service' // Storing service details in rdv_service field
         }
       },
       {
         $lookup: {
-          from: "employe", // The name of the service collection
-          localField: "rdv_service.id_employe",
-          foreignField: "_id",
-          as: "rdv_service.id_employe" // Storing service details in rdv_service field
+          from: 'employe', // The name of the service collection
+          localField: 'rdv_service.id_employe',
+          foreignField: '_id',
+          as: 'rdv_service.id_employe' // Storing service details in rdv_service field
         }
       },
       {
         $group: {
           _id: {
-            year: { $year: "$date_rdv" }, // Extracting the year from date_rdv
-            month: { $month: "$date_rdv" } // Extracting the month from date_rdv
+            year: { $year: '$date_rdv' }, // Extracting the year from date_rdv
+            month: { $month: '$date_rdv' } // Extracting the month from date_rdv
           },
           appointments: {
             $push: {
-              _id: "$_id",
-              rdv_service: "$rdv_service",
-              client: "$client",
-              paye: "$paye"
+              _id: '$_id',
+              rdv_service: '$rdv_service',
+              client: '$client',
+              paye: '$paye'
             }
-          },
-         // Counting the number of appointments
+          }
+          // Counting the number of appointments
         }
-      },
-      
-    ])
-   
-      let bilan=[];
-      // console.log(result);
-      // console.log(result[0].appointments.length);
-      for (let resultat_mois  of result) {
-        let calcul={
-          recette:0,
-          depense:0,
-          mois:resultat_mois._id.month,
-          annee:resultat_mois._id.year
-        };
-          for (const rendez_vous of resultat_mois.appointments) {
-             calcul.recette+=rendez_vous.rdv_service.prix;
-              if (rendez_vous.rdv_service.is_done) {
-                calcul.depense+=rendez_vous.rdv_service.prix*(rendez_vous.rdv_service.id_service[0].comission/100)
-              } 
-             
       }
-      bilan.push(calcul);
+    ])
+
+    let bilan = []
+    // console.log(result);
+    // console.log(result[0].appointments.length);
+    for (let resultat_mois of result) {
+      let calcul = {
+        recette: 0,
+        depense: 0,
+        mois: resultat_mois._id.month,
+        annee: resultat_mois._id.year
+      }
+      for (const rendez_vous of resultat_mois.appointments) {
+        calcul.recette += rendez_vous.rdv_service.prix
+        if (rendez_vous.rdv_service.is_done) {
+          calcul.depense +=
+            rendez_vous.rdv_service.prix *
+            (rendez_vous.rdv_service.id_service[0].comission / 100)
+        }
+      }
+      bilan.push(calcul)
     }
     // console.log(bilan);
-    let autre_depense=await Depense.depense_mois();
+    let autre_depense = await Depense.depense_mois()
     // console.log(autre_depense);
     for (const depense of autre_depense) {
-     
-          let dep=bilan.filter(bil=>bil.mois === depense.month && depense.year==bil.annee)[0];
-          if(dep){
-            bilan[bilan.indexOf(dep)].autre_depense=depense.totalDepense
-          }else{
-            let new_bilan={
-              recette:0,
-              depense:0,
-              mois:depense.year,
-              annee:depense.month,
-              autre_depense:depense.totalDepense
-            }
-            bilan.push(new_bilan);
-          }
-          // console.log(dep);
+      let dep = bilan.filter(
+        bil => bil.mois === depense.month && depense.year == bil.annee
+      )[0]
+      if (dep) {
+        bilan[bilan.indexOf(dep)].autre_depense = depense.totalDepense
+      } else {
+        let new_bilan = {
+          recette: 0,
+          depense: 0,
+          mois: depense.year,
+          annee: depense.month,
+          autre_depense: depense.totalDepense
+        }
+        bilan.push(new_bilan)
+      }
+      // console.log(dep);
     }
     // console.log(autre_depense);
-      // console.log(bilan);
-      return bilan;
-    } catch (error) {
-      throw error;
-    }
+    // console.log(bilan);
+    return bilan
+  } catch (error) {
+    throw error
+  }
 }
 
 const rdv = mongoose.model('rdv', rdvSchema)
