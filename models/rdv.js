@@ -473,27 +473,29 @@ rdvSchema.statics.getEmpPref = async function (id_client) {
 
 rdvSchema.statics.temps_moyen_travail = async function () {
   try {
-    const rdvs = await rdv.find({}) // Récupérer tous les rendez-vous
+    const rdvs = await rdv.find({}).populate("rdv_service.id_employe","nom prenom").exec() // Récupérer tous les rendez-vous
 
     const tempsTravailParEmploye = {} // Stocker la durée de travail pour chaque employé
     const rdvCompteurParEmploye = {}
+    let tab=[];
     rdvs.forEach(rdv => {
       rdv.rdv_service.forEach(service => {
         if (service.is_done) {
           const tempsTravail = service.datefin - service.datedebut // Durée de travail pour ce rendez-vous
           if (!tempsTravailParEmploye[service.id_employe]) {
-            tempsTravailParEmploye[service.id_employe] = tempsTravail
-            rdvCompteurParEmploye[service.id_employe] = 1
+            tempsTravailParEmploye[service.id_employe._id] = tempsTravail
+            rdvCompteurParEmploye[service.id_employe._id] = 1
+            tab.push(service.id_employe)
           } else {
-            tempsTravailParEmploye[service.id_employe] += tempsTravail
-            rdvCompteurParEmploye[service.id_employe]++
+            tempsTravailParEmploye[service.id_employe._id] += tempsTravail
+            rdvCompteurParEmploye[service.id_employe._id]++
           }
         }
       })
     })
 
     // Calculer le temps moyen de travail pour chaque employé
-    const tempsMoyenTravail = {}
+    const tempsMoyenTravail = []
     for (const employeId in tempsTravailParEmploye) {
       // Calculer la durée de travail en heures et minutes
       let tempsTravail;
@@ -509,9 +511,14 @@ rdvSchema.statics.temps_moyen_travail = async function () {
         const minutes = Math.ceil(diffMs / 60000) // Calculer les minutes
         tempsTravail = `${minutes} minute(s)`
       }
-      tempsMoyenTravail[employeId] = tempsTravail;
+      
+      tempsMoyenTravail.push({
+        employe:tab.filter(employe=>employe._id.toString()===employeId)[0],
+        tempsTravail:tempsTravail,
+        isa:diffMs
+      });
     }
-
+    
     return tempsMoyenTravail
   } catch (error) {
     console.error(

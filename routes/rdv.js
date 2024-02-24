@@ -58,8 +58,12 @@ router.get("/", async function (req, res) {
 });
 
 router.get("/avg", async function (req, res) {
-  
-  return res.status(200).json(await rdv.getAvgRdv());
+  let valiny={
+    avgrdv:await rdv.getAvgRdv(),
+    tempsMoyen:await rdv.temps_moyen_travail(),
+    beneficemois:await  rdv.benefice_mois(),
+  }
+  return res.status(200).json(valiny);
   
 })
 
