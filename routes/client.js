@@ -40,13 +40,12 @@ router.post('/sign-in', async (req, res) => {
   }
 })
 router.get('/names', async (req, res) => {
-  // connection.openConnection()  
   return res
     .status(200)
     .json(await client.find({}).select('nom_client prenom_client').exec())
 })
 router.get('/histo/:id', async (req, res)=>{
-  console.log("niditra");
+  // console.log("niditra");
   let rdv=await Rdv.find({id_client:req.params.id}).populate('rdv_service.id_service').exec()
   console.log(rdv);
   return res.status(200).json(rdv)
