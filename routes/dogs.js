@@ -5,7 +5,6 @@ var router = express.Router();
 
 /* GET home page. */
 router.get("/", async (req, res) => {
-    connection.openConnection();
     let newDog = new Dog({
       name: 'Kelvin Mwinuka',
       breed: 'email@kelvinmwinuka.com',

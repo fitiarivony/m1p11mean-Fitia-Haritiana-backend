@@ -7,6 +7,10 @@ const OffreSpecialeSchema = new mongoose.Schema(
     service: { type: mongoose.Schema.ObjectId, ref: 'Service' },
     reduction: { type: Number, required: true },
     clientVises: {type: [mongoose.Schema.ObjectId], ref: 'Client'},
+    isa:{type: Number, required: true, default: 1},
+    dateDebut: { type: Date, required: true },
+    dateFin:{type: Date, required: true},
+    nombre:{type: Number, required: true, default: 1},
   },
   { collection: 'OffreSpeciale' }
 )

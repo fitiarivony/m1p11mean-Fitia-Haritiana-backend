@@ -9,8 +9,7 @@ var router = express.Router();
 /* GET home page. */
 
 router.post("/login", async (req, res) => {
-  console.log("niditra");
-  connection.openConnection();
+  // console.log("niditra");
   let tempEmp = new models.Employe({
     identifiant: req.body.identifiant,
     mdp: req.body.mdp,
@@ -30,7 +29,6 @@ router.post("/login", async (req, res) => {
   }
 });
 router.get("/", async (req, res) => {
-  connection.openConnection();
   return res.status(200).json(await models.Employe.getAll());
 });
 router.get("/favs", async (req, res) => {
@@ -38,20 +36,17 @@ router.get("/favs", async (req, res) => {
 });
 
 router.get("/names", async (req, res) => {
-  connection.openConnection();
   return res
     .status(200)
     .json(await models.Employe.find({}).select("nom prenom").exec());
 });
 
 router.get("/:id", async (req, res) => {
-  connection.openConnection();
   let id = req.params.id;
   let emp = await models.Employe.findById(id);
   return res.status(200).json(emp);
 });
 router.post("/", async (req, res) => {
-  connection.openConnection();
   let tempEmp = new models.Employe({
     identifiant: req.body.identifiant,
     mdp: req.body.mdp,
@@ -67,7 +62,6 @@ router.post("/", async (req, res) => {
   return res.status(200).json("Employé enregistré");
 });
 router.put("/:id", async (req, res) => {
-  connection.openConnection();
   let id = req.params.id;
   await models.Employe.findByIdAndUpdate(
     id,
@@ -79,7 +73,6 @@ router.put("/:id", async (req, res) => {
   return res.status(200).json(result);
 });
 router.delete("/:id", async (req, res) => {
-  connection.openConnection();
   let id = req.params.id;
   await models.Employe.findByIdAndDelete(id);
 

@@ -4,20 +4,34 @@ const Token = require("../models/token");
 const rdv = require("../models/rdv");
 const Service = require("../models/service_model");
 const Depense = require("../models/depense");
+const client = require("../models/client");
 var router = express.Router();
 const Employe = require("../models/models").Employe;
 router.post("/", async function (req, res) {
   console.log("tonga");
   try {
     const token = new Token();
-    const client = await token.authenticate(req.headers.authorization, 3);
+    const log = await token.authenticate(req.headers.authorization, 3);
     let rendez_vous = req.body;
-    rendez_vous.id_client = client.id_admin;
+    rendez_vous.id_client = log.id_admin;
     // console.log(rendez_vous);
+    
     let new_rdv = new rdv(rendez_vous);
     await new_rdv.save_emp();
-    // console.log(new_rdv);
-    // await new_rdv.save();
+
+    let cl= await client.findById(rendez_vous.id_client)
+    new_rdv.reduction.map((el)=>{
+      cl.reduction.map((el2)=>{
+        if(el.toString()==el2.offre.toString()){
+          el2.nombre-=1
+          if(el2.nombre==0)
+            cl.reduction.splice(cl.reduction.indexOf(el2),1)
+        }
+      })
+    })
+    console.log(cl.reduction);
+    await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
+    // // await new_rdv.save();
     return res.status(200).json("Coucou");
   } catch (error) {
     console.error(error);
@@ -25,14 +39,24 @@ router.post("/", async function (req, res) {
   }
 });
 router.get("/prise-rdv/:id", async function (req, res) {
+  // console.log("niditra priuse rdv");
+  let reduction_liste= JSON.parse(JSON.stringify(await client.getReductions(req.params.id)))
+  console.log("-----", reduction_liste);
+  let liste_traite=[]
+  reduction_liste.map((reduction)=>{
+    liste_traite.push(reduction.offre)
+    liste_traite[liste_traite.length-1].nombre=reduction.nombre
+  })
   try {
     let data = {
       employe: await rdv.getEmpPref(req.params.id),
       service: await rdv.getServicePref(req.params.id),
+      reduction: liste_traite
     };
 
     return res.status(200).json(data);
   } catch (error) {
+    console.log(error);
     return res.status(500).json(error.message);
   }
 });
@@ -173,6 +197,7 @@ router.get("/:id_rdv", async function (req, res) {
     let data = {
       employe: await rdv.getEmpPref(client.id_admin),
       service: await rdv.getServicePref(client.id_admin),
+      reduction: await client.getReductions(client.id_admin),
       rdv: rendezvous,
     };
 

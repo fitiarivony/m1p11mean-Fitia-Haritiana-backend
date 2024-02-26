@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Service = require("./service_model");
 const client = require("./client");
+const OffreSpeciale= require("./offre_speciale")
 const { Employe } = require("./models");
 const Mailer = require("../models/mailer");
 const Depense = require("./depense");
@@ -14,6 +15,11 @@ const rdvSchema = mongoose.Schema(
     },
     date_rdv: {
       type: Date,
+      required: true
+    },
+    reduction: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'OffreSpeciale',
       required: true
     },
     rdv_service: [
@@ -203,7 +209,7 @@ rdvSchema.statics.remindRdv = async function () {
 }
 rdvSchema.statics.getAvgRdv = async function () {
   const Rdv = mongoose.model('rdv', rdvSchema)
-  console.log('niditra')
+  // console.log('niditra')
   let resMonth = await Rdv.aggregate([
     {
       $group: {
@@ -267,6 +273,8 @@ rdvSchema.methods = {
   },
   check_horaire: async function (emps, services, id_rdv) {
     console.log("Check horaire");
+    let id_reductions=this.reduction
+    let reductions=await OffreSpeciale.find({ _id: { $in: id_reductions } }).exec()
     let date = new Date(this.date_rdv);
     for (let i = 0; i < this.rdv_service.length; i++) {
       let employe = this.rdv_service[i];
@@ -307,6 +315,19 @@ rdvSchema.methods = {
         this.rdv_service[i].datedebut = debut;
         this.rdv_service[i].datefin = fin;
         this.rdv_service[i].prix = service.prix;
+        let prix=service.prix
+        reductions.map((reduction) =>{
+          console.log("compaison reduction",reduction.service,this.rdv_service[i].id_service);
+          if(reduction.service.toString()===this.rdv_service[i].id_service.toString()){
+            // console.log("tafiditra réduction");
+            if (this.rdv_service[i].pi === undefined) this.rdv_service[i].pi = prix
+            if (this.rdv_service[i].reduc === undefined) this.rdv_service[i].reduc = 0
+            this.rdv_service[i].reduc += reduction.reduction
+            this.rdv_service[i].prix = (this.rdv_service[i].pi * (100 - this.rdv_service[i].reduc)) / 100
+            // console.log(this.rdv_service[i].prix);
+          }
+        })
+        //TODO: prix
         console.log("Date debut", date, "Date fin", fin);
         console.log(this);
       } else {
