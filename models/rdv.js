@@ -610,6 +610,7 @@ rdvSchema.statics.benefice_mois = async function () {
         depense: 0,
         mois: resultat_mois._id.month,
         annee: resultat_mois._id.year,
+        autre_depense:0
       };
       for (const rendez_vous of resultat_mois.appointments) {
         calcul.recette += rendez_vous.rdv_service.prix;
