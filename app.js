@@ -13,7 +13,7 @@ var ClientRouter = require('./routes/client')
 var OffreRouter = require('./routes/offre_speciale_controller')
 var RdvRouter = require('./routes/rdv')
 var DepenseRouter = require('./routes/depense')
-
+var TokenRouter=require('./routes/tokenController')
 var app = express()
 
 app.use(bodyParser.json()) //Fanekena anle format JSON
@@ -34,7 +34,7 @@ app.use('/clients', ClientRouter)
 app.use('/offres', OffreRouter)
 app.use('/rdv', RdvRouter)
 app.use('/depense', DepenseRouter)
-
+app.use('/token',TokenRouter)
 
 app.listen(process.env.PORT, function () {
   console.log('Example app listening on port ' + process.env.PORT)
