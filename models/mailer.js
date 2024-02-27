@@ -45,7 +45,7 @@ function stringifyArray (mails) {
 async function sendSpecialOffer (mails, title ,content) {
   // send mail with defined transport object
   const info = await transporter.sendMail({
-    from: '"Salon de beauté Foo 👻" <foo@example.com>', // sender address
+    from: '"Ocean Salon 🍃" <foo@example.com>', // sender address
     to: stringifyArray(mails), // list of receivers
     subject: title, // Subject line
     html: content // html body

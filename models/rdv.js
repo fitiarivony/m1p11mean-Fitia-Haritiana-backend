@@ -123,7 +123,7 @@ rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
         },
       });
       console.log(rdv_daty);
-      if (rdv_daty.length != 0) throw new Error("Mifanitsaka date");
+      if (rdv_daty.length != 0) throw new Error("L'employé n'est pas disponible");
     }
   }
   for (const rdv_service of rdv_services) {
@@ -140,7 +140,7 @@ rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
       },
     });
     console.log(rdv_daty);
-    if (rdv_daty.length != 0) throw new Error("Mifanitsaka date");
+    if (rdv_daty.length != 0) throw new Error("L'employé n'est pas disponible");
   }
 };
 
@@ -332,7 +332,7 @@ rdvSchema.methods = {
         console.log(this);
       } else {
         console.log("Mifanitsaka date");
-        throw new Error("Mifanitsaka date");
+        throw new Error("L'employé n'est pas disponible");
       }
       date.setMinutes(service.duree + date.getMinutes());
     }
