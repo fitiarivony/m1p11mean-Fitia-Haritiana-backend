@@ -26,7 +26,22 @@ function differ(arr1, arr2) {
   arr2=JSON.parse(JSON.stringify(arr2))
   return arr1.filter(element => !arr2.includes(element));
 }
-
+function addInPax(apinaAnyAmPax, cl){
+  apinaAnyAmPax.map((el)=>{
+    let tao=false
+    // console.log(el.toString(), el2.offre.toString());
+    cl.reduction.map((el2)=>{
+      if(el.toString()===el2.offre.toString()){
+        tao=true
+        el2.nombre+=1
+      }
+    })
+    if(!tao){
+      // console.log("tsy tao");
+      cl.reduction.push({offre:el, nombre:1})
+    }
+  })
+}
 router.post("/", async function (req, res) {
   console.log("tonga");
   try {
@@ -190,11 +205,17 @@ router.post("/suivi-tache", async function (req, res) {
 router.delete("/:id_rdv", async function (req, res) {
   try {
     const token = new Token();
-    let client = await token.authenticate(req.headers.authorization, 3);
+    let admin = await token.authenticate(req.headers.authorization, 3);
+
+    let rdv_to_delete=await rdv.findById(req.params.id_rdv).exec()
+    let apinaAnyAmPax=rdv_to_delete.reduction
+    let cl= await client.findById(admin.id_admin).exec()
+    addInPax(apinaAnyAmPax, cl)
     await rdv.findOneAndDelete({
       _id: req.params.id_rdv,
-      id_client: client.id_admin,
+      id_client: admin.id_admin,
     });
+   
     return res.status(200).json(true);
   } catch (error) {
     console.error(error);
@@ -261,20 +282,7 @@ router.put("/:id_rdv", async function (req, res) {
         }
       })
     })
-    apinaAnyAmPax.map((el)=>{
-      let tao=false
-      // console.log(el.toString(), el2.offre.toString());
-      cl.reduction.map((el2)=>{
-        if(el.toString()===el2.offre.toString()){
-          tao=true
-          el2.nombre+=1
-        }
-      })
-      if(!tao){
-        console.log("tsy tao");
-        cl.reduction.push({offre:el, nombre:1})
-      }
-    })
+    addInPax(apinaAnyAmPax, cl)
     await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
 
     return res.status(200).json("Coucou");

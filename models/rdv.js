@@ -265,7 +265,7 @@ rdvSchema.methods = {
       await this.check_horaire(emps, services, id_rdv);
       let rdv_model = mongoose.model("rdv", rdvSchema);
       await rdv.findByIdAndUpdate(id_rdv, {
-        $set: { rdv_service: this.rdv_service, date_rdv: this.date_rdv },
+        $set: { rdv_service: this.rdv_service, date_rdv: this.date_rdv, reduction: this.reduction },
       });
     } catch (error) {
       throw error;
