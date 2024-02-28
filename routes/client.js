@@ -17,7 +17,7 @@ router.use(async function (req, res, next) {
   next()
 })
 
-router.post('/sign-up', async function (req, res) {
+router.post('/sign-up', async function (req, res,next) {
   try {
     const { _id, ...user } = req.body
     user.mdp = req.mdp_hash
@@ -25,7 +25,7 @@ router.post('/sign-up', async function (req, res) {
     await new_client.save()
     return res.status(200).json(new_client)
   } catch (error) {
-    return res.status(500).json(error.message)
+    next(error);
   }
 })
 router.post('/sign-in', async (req, res) => {
@@ -40,13 +40,12 @@ router.post('/sign-in', async (req, res) => {
   }
 })
 router.get('/names', async (req, res) => {
-  // connection.openConnection()  
   return res
     .status(200)
     .json(await client.find({}).select('nom_client prenom_client').exec())
 })
 router.get('/histo/:id', async (req, res)=>{
-  console.log("niditra");
+  // console.log("niditra");
   let rdv=await Rdv.find({id_client:req.params.id}).populate('rdv_service.id_service').exec()
   console.log(rdv);
   return res.status(200).json(rdv)
@@ -72,4 +71,21 @@ router.post('/fav-serv/:id', async (req, res) => {
   let cl = await client.findByIdAndUpdate(req.params.id, {$set:{fav_service:req.body}}).exec()  
   return res.status(200).json("Nety")
 })
+router.use((err, req, res, next) => {
+  if (err.name === 'ValidationError') {
+      let errorMessage = 'Erreur de validation : ';
+      for (let field in err.errors) {
+          errorMessage += `${err.errors[field].message}, `;
+      }
+      errorMessage = errorMessage.slice(0, -2); // Pour enlever la virgule et l'espace en trop
+      return res.status(422).send(errorMessage);
+  }
+  next(err);
+});
+
+// Middleware pour gérer les erreurs non gérées
+router.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send(err.error);
+});
 module.exports = router

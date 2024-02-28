@@ -78,7 +78,7 @@ EmployeSchema.methods = {
         return {token:token,admin:res};
       } else {
         // return 'Mot de passe éronné'
-        throw new Error('Mot de passe éronné')
+        throw new Error('Mot de passe eronné')
       }
     } else {
       console.log('Login failed. Incorrect identifier or password.')

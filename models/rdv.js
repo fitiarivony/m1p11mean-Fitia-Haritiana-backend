@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Service = require("./service_model");
 const client = require("./client");
+const OffreSpeciale= require("./offre_speciale")
 const { Employe } = require("./models");
 const Mailer = require("../models/mailer");
 const Depense = require("./depense");
@@ -14,6 +15,11 @@ const rdvSchema = mongoose.Schema(
     },
     date_rdv: {
       type: Date,
+      required: true
+    },
+    reduction: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'OffreSpeciale',
       required: true
     },
     rdv_service: [
@@ -117,7 +123,7 @@ rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
         },
       });
       console.log(rdv_daty);
-      if (rdv_daty.length != 0) throw new Error("Mifanitsaka date");
+      if (rdv_daty.length != 0) throw new Error("L'employé n'est pas disponible");
     }
   }
   for (const rdv_service of rdv_services) {
@@ -134,7 +140,7 @@ rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
       },
     });
     console.log(rdv_daty);
-    if (rdv_daty.length != 0) throw new Error("Mifanitsaka date");
+    if (rdv_daty.length != 0) throw new Error("L'employé n'est pas disponible");
   }
 };
 
@@ -195,7 +201,7 @@ rdvSchema.statics.remindRdv = async function () {
 
     Mailer.sendSpecialOffer(
       [person.identifiant],
-      "Rappel de rdv chez Foo",
+      "Rappel de rdv chez Ocean Salon",
       mail
     );
   });
@@ -203,7 +209,7 @@ rdvSchema.statics.remindRdv = async function () {
 }
 rdvSchema.statics.getAvgRdv = async function () {
   const Rdv = mongoose.model('rdv', rdvSchema)
-  console.log('niditra')
+  // console.log('niditra')
   let resMonth = await Rdv.aggregate([
     {
       $group: {
@@ -221,6 +227,11 @@ rdvSchema.statics.getAvgRdv = async function () {
     }
   ])
   let result = await Rdv.aggregate([
+    {
+      $match: {
+        paye: true
+      }
+    },
     {
       $group: {
         _id: { $dayOfWeek: '$date_rdv' },
@@ -259,7 +270,7 @@ rdvSchema.methods = {
       await this.check_horaire(emps, services, id_rdv);
       let rdv_model = mongoose.model("rdv", rdvSchema);
       await rdv.findByIdAndUpdate(id_rdv, {
-        $set: { rdv_service: this.rdv_service, date_rdv: this.date_rdv },
+        $set: { rdv_service: this.rdv_service, date_rdv: this.date_rdv, reduction: this.reduction },
       });
     } catch (error) {
       throw error;
@@ -267,6 +278,8 @@ rdvSchema.methods = {
   },
   check_horaire: async function (emps, services, id_rdv) {
     console.log("Check horaire");
+    let id_reductions=this.reduction
+    let reductions=await OffreSpeciale.find({ _id: { $in: id_reductions } }).exec()
     let date = new Date(this.date_rdv);
     for (let i = 0; i < this.rdv_service.length; i++) {
       let employe = this.rdv_service[i];
@@ -307,11 +320,24 @@ rdvSchema.methods = {
         this.rdv_service[i].datedebut = debut;
         this.rdv_service[i].datefin = fin;
         this.rdv_service[i].prix = service.prix;
+        let prix=service.prix
+        reductions.map((reduction) =>{
+          console.log("compaison reduction",reduction.service,this.rdv_service[i].id_service);
+          if(reduction.service.toString()===this.rdv_service[i].id_service.toString()){
+            // console.log("tafiditra réduction");
+            if (this.rdv_service[i].pi === undefined) this.rdv_service[i].pi = prix
+            if (this.rdv_service[i].reduc === undefined) this.rdv_service[i].reduc = 0
+            this.rdv_service[i].reduc += reduction.reduction
+            this.rdv_service[i].prix = (this.rdv_service[i].pi * (100 - this.rdv_service[i].reduc)) / 100
+            // console.log(this.rdv_service[i].prix);
+          }
+        })
+        //TODO: prix
         console.log("Date debut", date, "Date fin", fin);
         console.log(this);
       } else {
         console.log("Mifanitsaka date");
-        throw new Error("Mifanitsaka date");
+        throw new Error("L'employé n'est pas disponible");
       }
       date.setMinutes(service.duree + date.getMinutes());
     }
@@ -473,27 +499,29 @@ rdvSchema.statics.getEmpPref = async function (id_client) {
 
 rdvSchema.statics.temps_moyen_travail = async function () {
   try {
-    const rdvs = await rdv.find({}) // Récupérer tous les rendez-vous
+    const rdvs = await rdv.find({}).populate("rdv_service.id_employe","nom prenom").exec() // Récupérer tous les rendez-vous
 
     const tempsTravailParEmploye = {} // Stocker la durée de travail pour chaque employé
     const rdvCompteurParEmploye = {}
+    let tab=[];
     rdvs.forEach(rdv => {
       rdv.rdv_service.forEach(service => {
         if (service.is_done) {
           const tempsTravail = service.datefin - service.datedebut // Durée de travail pour ce rendez-vous
           if (!tempsTravailParEmploye[service.id_employe]) {
-            tempsTravailParEmploye[service.id_employe] = tempsTravail
-            rdvCompteurParEmploye[service.id_employe] = 1
+            tempsTravailParEmploye[service.id_employe._id] = tempsTravail
+            rdvCompteurParEmploye[service.id_employe._id] = 1
+            tab.push(service.id_employe)
           } else {
-            tempsTravailParEmploye[service.id_employe] += tempsTravail
-            rdvCompteurParEmploye[service.id_employe]++
+            tempsTravailParEmploye[service.id_employe._id] += tempsTravail
+            rdvCompteurParEmploye[service.id_employe._id]++
           }
         }
       })
     })
 
     // Calculer le temps moyen de travail pour chaque employé
-    const tempsMoyenTravail = {}
+    const tempsMoyenTravail = []
     for (const employeId in tempsTravailParEmploye) {
       // Calculer la durée de travail en heures et minutes
       let tempsTravail;
@@ -509,9 +537,14 @@ rdvSchema.statics.temps_moyen_travail = async function () {
         const minutes = Math.ceil(diffMs / 60000) // Calculer les minutes
         tempsTravail = `${minutes} minute(s)`
       }
-      tempsMoyenTravail[employeId] = tempsTravail;
+      
+      tempsMoyenTravail.push({
+        employe:tab.filter(employe=>employe._id.toString()===employeId)[0],
+        tempsTravail:tempsTravail,
+        isa:diffMs
+      });
     }
-
+    
     return tempsMoyenTravail
   } catch (error) {
     console.error(
@@ -582,6 +615,7 @@ rdvSchema.statics.benefice_mois = async function () {
         depense: 0,
         mois: resultat_mois._id.month,
         annee: resultat_mois._id.year,
+        autre_depense:0
       };
       for (const rendez_vous of resultat_mois.appointments) {
         calcul.recette += rendez_vous.rdv_service.prix;

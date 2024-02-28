@@ -4,20 +4,68 @@ const Token = require("../models/token");
 const rdv = require("../models/rdv");
 const Service = require("../models/service_model");
 const Depense = require("../models/depense");
+const client = require("../models/client");
+const OffreSpeciale = require("../models/offre_speciale");
 var router = express.Router();
 const Employe = require("../models/models").Employe;
+
+async function get_normalized_reduction(id_admin){
+  let reduction_liste= JSON.parse(JSON.stringify(await client.getReductions(id_admin)))
+  let liste_traite=[]
+  reduction_liste.map((reduction)=>{
+    liste_traite.push(reduction.offre)
+    liste_traite[liste_traite.length-1].nombre=reduction.nombre
+  })
+  return liste_traite
+}
+function getValuesByField(arrayOfObjects, fieldName) {
+  return arrayOfObjects.map(obj => obj[fieldName]);
+}
+function differ(arr1, arr2) {
+  arr1=JSON.parse(JSON.stringify(arr1))
+  arr2=JSON.parse(JSON.stringify(arr2))
+  return arr1.filter(element => !arr2.includes(element));
+}
+function addInPax(apinaAnyAmPax, cl){
+  apinaAnyAmPax.map((el)=>{
+    let tao=false
+    // console.log(el.toString(), el2.offre.toString());
+    cl.reduction.map((el2)=>{
+      if(el.toString()===el2.offre.toString()){
+        tao=true
+        el2.nombre+=1
+      }
+    })
+    if(!tao){
+      // console.log("tsy tao");
+      cl.reduction.push({offre:el, nombre:1})
+    }
+  })
+}
 router.post("/", async function (req, res) {
   console.log("tonga");
   try {
     const token = new Token();
-    const client = await token.authenticate(req.headers.authorization, 3);
+    const log = await token.authenticate(req.headers.authorization, 3);
     let rendez_vous = req.body;
-    rendez_vous.id_client = client.id_admin;
+    rendez_vous.id_client = log.id_admin;
     // console.log(rendez_vous);
+    
     let new_rdv = new rdv(rendez_vous);
     await new_rdv.save_emp();
-    // console.log(new_rdv);
-    // await new_rdv.save();
+
+    let cl= await client.findById(rendez_vous.id_client)
+    new_rdv.reduction.map((el)=>{
+      cl.reduction.map((el2)=>{
+        if(el.toString()==el2.offre.toString()){
+          el2.nombre-=1
+          if(el2.nombre==0)
+            cl.reduction.splice(cl.reduction.indexOf(el2),1)
+        }
+      })
+    })
+    await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
+    // // await new_rdv.save();
     return res.status(200).json("Coucou");
   } catch (error) {
     console.error(error);
@@ -25,14 +73,17 @@ router.post("/", async function (req, res) {
   }
 });
 router.get("/prise-rdv/:id", async function (req, res) {
+  // console.log("niditra prise rdv");
   try {
     let data = {
       employe: await rdv.getEmpPref(req.params.id),
       service: await rdv.getServicePref(req.params.id),
+      reduction: await get_normalized_reduction(req.params.id),
     };
 
     return res.status(200).json(data);
   } catch (error) {
+    console.log(error);
     return res.status(500).json(error.message);
   }
 });
@@ -58,8 +109,12 @@ router.get("/", async function (req, res) {
 });
 
 router.get("/avg", async function (req, res) {
-  
-  return res.status(200).json(await rdv.getAvgRdv());
+  let valiny={
+    avgrdv:await rdv.getAvgRdv(),
+    tempsMoyen:await rdv.temps_moyen_travail(),
+    beneficemois:await  rdv.benefice_mois(),
+  }
+  return res.status(200).json(valiny);
   
 })
 
@@ -150,11 +205,17 @@ router.post("/suivi-tache", async function (req, res) {
 router.delete("/:id_rdv", async function (req, res) {
   try {
     const token = new Token();
-    let client = await token.authenticate(req.headers.authorization, 3);
+    let admin = await token.authenticate(req.headers.authorization, 3);
+
+    let rdv_to_delete=await rdv.findById(req.params.id_rdv).exec()
+    let apinaAnyAmPax=rdv_to_delete.reduction
+    let cl= await client.findById(admin.id_admin).exec()
+    addInPax(apinaAnyAmPax, cl)
     await rdv.findOneAndDelete({
       _id: req.params.id_rdv,
-      id_client: client.id_admin,
+      id_client: admin.id_admin,
     });
+   
     return res.status(200).json(true);
   } catch (error) {
     console.error(error);
@@ -164,11 +225,24 @@ router.delete("/:id_rdv", async function (req, res) {
 router.get("/:id_rdv", async function (req, res) {
   try {
     const token = new Token();
-    let client = await token.authenticate(req.headers.authorization, 3);
+    let cl = await token.authenticate(req.headers.authorization, 3);
     let rendezvous = await rdv.findById(req.params.id_rdv);
+    // reduction possédé normalement
+    let normalized_reduction=await get_normalized_reduction(cl.id_admin)
+
+    // reduction dans le formulaire
+    let alreadyAo=getValuesByField(normalized_reduction, '_id')
+    let anapiana=rendezvous.reduction
+    let toAdd=differ(anapiana, alreadyAo)
+    toAdd=(await OffreSpeciale.getSpecialOffersByIds(toAdd))
+    toAdd.map((el)=>{el.nombre=1})
+    normalized_reduction=normalized_reduction.concat(toAdd)
+
+    // response
     let data = {
-      employe: await rdv.getEmpPref(client.id_admin),
-      service: await rdv.getServicePref(client.id_admin),
+      employe: await rdv.getEmpPref(cl.id_admin),
+      service: await rdv.getServicePref(cl.id_admin),
+      reduction: normalized_reduction,
       rdv: rendezvous,
     };
 
@@ -181,15 +255,36 @@ router.get("/:id_rdv", async function (req, res) {
 router.put("/:id_rdv", async function (req, res) {
   try {
     const token = new Token();
-    const client = await token.authenticate(req.headers.authorization, 3);
+    const admin = await token.authenticate(req.headers.authorization, 3);
     let rendez_vous = req.body;
     if (
-      rendez_vous.id_client !== client.id_admin &&
+      rendez_vous.id_client !== admin.id_admin &&
       rendez_vous.id_rdv !== req.params.id_rdv
     )
       return res.status(500).json("You're not allowed to do this action");
+    //recupération ancienne réduction
+    let old_rdv_reduc = await rdv.findById(req.params.id_rdv).select("reduction").exec();
     let new_rdv = new rdv(rendez_vous);
     await new_rdv.update_emp(req.params.id_rdv);
+    //Nouvelle réduction
+    let new_rdv_reduc = new_rdv.reduction
+    let apinaAnyAmPax=differ(old_rdv_reduc.reduction, new_rdv_reduc)
+    let alanaAnyAmPax=differ(new_rdv_reduc, old_rdv_reduc.reduction)
+
+    console.log("---pax update---", apinaAnyAmPax, alanaAnyAmPax);
+    let cl= await client.findById(new_rdv.id_client)
+    alanaAnyAmPax.map((el)=>{
+      cl.reduction.map((el2)=>{
+        if(el.toString()==el2.offre.toString()){
+          el2.nombre-=1
+          if(el2.nombre==0)
+            cl.reduction.splice(cl.reduction.indexOf(el2),1)
+        }
+      })
+    })
+    addInPax(apinaAnyAmPax, cl)
+    await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
+
     return res.status(200).json("Coucou");
   } catch (error) {
     console.error(error);
