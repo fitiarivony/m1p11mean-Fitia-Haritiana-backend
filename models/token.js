@@ -33,7 +33,46 @@ tokenSchema.methods={
       if (!token || token ==null) throw new Error('No credentials provided');
       return token;
     },
+    authenticateAll:async function(authorization){
+        const Token=mongoose.model('Token',tokenSchema);
+        if (!authorization) {
+            console.log("Authentication tsisy");
+            throw new Error('No credentials provided');
+      }
+      let token_hash=authorization.split(' ')[1];
+      let now=new Date();
+      let token= await Token.findOne({token: token_hash,date_expiration:{$gte:(now) }});
+      console.log(token_hash,token);
+      if (!token || token ==null) throw new Error('No credentials provided');
+      return token;
+    },
    
+}
+tokenSchema.statics.authenticate=async function(authorization,statut){
+    const Token=mongoose.model('Token',tokenSchema);
+    if (!authorization) {
+        console.log("Authentication tsisy");
+        throw new Error('No credentials provided');
+  }
+  let token_hash=authorization.split(' ')[1];
+  let now=new Date();
+  let token= await Token.findOne({token: token_hash,date_expiration:{$gte:(now) },statut:statut});
+  console.log(token_hash,token);
+  if (!token || token ==null) throw new Error('No credentials provided');
+  return token;
+}
+tokenSchema.statics.authenticateAll=async function(authorization){
+    const Token=mongoose.model('Token',tokenSchema);
+    if (!authorization) {
+        console.log("Authentication tsisy");
+        throw new Error('No credentials provided');
+  }
+  let token_hash=authorization.split(' ')[1];
+  let now=new Date();
+  let token= await Token.findOne({token: token_hash,date_expiration:{$gte:(now) }});
+  console.log(token_hash,token);
+  if (!token || token ==null) throw new Error('No credentials provided');
+  return token;
 }
 tokenSchema.statics.generateToken=async function(id_admin,statut){
     let daty=new Date();
