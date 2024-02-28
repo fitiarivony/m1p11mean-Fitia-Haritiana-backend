@@ -5,12 +5,11 @@ var router = express.Router();
 router.delete("/logout/:id", async function (req, res) {
     let now=new Date()
   try {
-    console.log(Token);
+    let token_hash=req.headers.authorization.split(' ')[1];
     await Token.deleteOne({
-        token: req.headers.authorization,
+        token: token_hash,
       });
     await Token.deleteMany({
-      id_admin: req.params.id,
       date_expiration: { $lt: now },
     });
     return res.status(200).json(true);
