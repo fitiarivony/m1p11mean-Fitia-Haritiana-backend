@@ -24,13 +24,13 @@ tokenSchema.methods={
         const Token=mongoose.model('Token',tokenSchema);
         if (!authorization) {
             console.log("Authentication tsisy");
-            throw new Error('No credentials provided');
+            throw new Error("Votre connexion a epxiré, veuillez vous reconnecter");
       }
       let token_hash=authorization.split(' ')[1];
       let now=new Date();
       let token= await Token.findOne({token: token_hash,date_expiration:{$gte:(now) },statut:statut});
       console.log(token_hash,token);
-      if (!token || token ==null) throw new Error('No credentials provided');
+      if (!token || token ==null) throw new Error("Votre connexion a epxiré, veuillez vous reconnecter");
       return token;
     },
     authenticateAll:async function(authorization){
