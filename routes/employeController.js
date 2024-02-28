@@ -20,11 +20,11 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     if (error.message === "Login erroné") {
       return res.status(500).json("Login erroné");
-    } else if (error.message === "Mot de passe éronné") {
-      return res.status(500).json("Mot de passe éronné");
+    } else if (error.message === "Mot de passe eronné") {
+      return res.status(500).json("Mot de passe eronné");
     } else {
       console.log("other error");
-      console.log(error);
+      console.log(error.error);
     }
   }
 });
