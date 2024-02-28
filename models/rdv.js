@@ -228,6 +228,11 @@ rdvSchema.statics.getAvgRdv = async function () {
   ])
   let result = await Rdv.aggregate([
     {
+      $match: {
+        paye: true
+      }
+    },
+    {
       $group: {
         _id: { $dayOfWeek: '$date_rdv' },
         totalPrix: { $sum: { $sum: '$rdv_service.prix' } },
