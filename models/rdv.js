@@ -201,7 +201,7 @@ rdvSchema.statics.remindRdv = async function () {
 
     Mailer.sendSpecialOffer(
       [person.identifiant],
-      "Rappel de rdv chez Foo",
+      "Rappel de rdv chez Ocean Salon",
       mail
     );
   });
