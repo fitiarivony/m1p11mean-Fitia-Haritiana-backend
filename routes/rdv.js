@@ -73,7 +73,7 @@ router.post("/", async function (req, res) {
   }
 });
 router.get("/prise-rdv/:id", async function (req, res) {
-  // console.log("niditra priuse rdv");
+  // console.log("niditra prise rdv");
   try {
     let data = {
       employe: await rdv.getEmpPref(req.params.id),

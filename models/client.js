@@ -69,6 +69,7 @@ clientSchema.methods = {
         return { admin: client, token: token }
       } else {
         //return Mot de passe erroné!
+        console.log("Mot de passe erroné!");
         throw new Error('Mot de passe erroné')
       }
     } else {
@@ -77,5 +78,6 @@ clientSchema.methods = {
     }
   }
 }
+
 const client = mongoose.model('client', clientSchema)
 module.exports = client
