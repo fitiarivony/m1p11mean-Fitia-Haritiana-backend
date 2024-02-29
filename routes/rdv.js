@@ -50,22 +50,22 @@ router.post("/", async function (req, res) {
     let rendez_vous = req.body;
     rendez_vous.id_client = log.id_admin;
     // // console.log(rendez_vous);
-    console.log(rendez_vous);
+    
     let new_rdv = new rdv(rendez_vous);
     console.log(new_rdv);
-    // await new_rdv.save_emp();
+    await new_rdv.save_emp();
 
-    // let cl= await client.findById(rendez_vous.id_client)
-    // new_rdv.reduction.map((el)=>{
-    //   cl.reduction.map((el2)=>{
-    //     if(el.toString()==el2.offre.toString()){
-    //       el2.nombre-=1
-    //       if(el2.nombre==0)
-    //         cl.reduction.splice(cl.reduction.indexOf(el2),1)
-    //     }
-    //   })
-    // })
-    // await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
+    let cl= await client.findById(rendez_vous.id_client)
+    new_rdv.reduction.map((el)=>{
+      cl.reduction.map((el2)=>{
+        if(el.toString()==el2.offre.toString()){
+          el2.nombre-=1
+          if(el2.nombre==0)
+            cl.reduction.splice(cl.reduction.indexOf(el2),1)
+        }
+      })
+    })
+    await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
     // // await new_rdv.save();
     return res.status(200).json("Coucou");
   } catch (error) {
@@ -266,25 +266,29 @@ router.put("/:id_rdv", async function (req, res) {
     //recupération ancienne réduction
     let old_rdv_reduc = await rdv.findById(req.params.id_rdv).select("reduction").exec();
     let new_rdv = new rdv(rendez_vous);
-    await new_rdv.update_emp(req.params.id_rdv);
-    //Nouvelle réduction
-    let new_rdv_reduc = new_rdv.reduction
-    let apinaAnyAmPax=differ(old_rdv_reduc.reduction, new_rdv_reduc)
-    let alanaAnyAmPax=differ(new_rdv_reduc, old_rdv_reduc.reduction)
+    console.log(rendez_vous);
+    console.log(new_rdv);
 
-    // console.log("---pax update---", apinaAnyAmPax, alanaAnyAmPax);
-    let cl= await client.findById(new_rdv.id_client)
-    alanaAnyAmPax.map((el)=>{
-      cl.reduction.map((el2)=>{
-        if(el.toString()==el2.offre.toString()){
-          el2.nombre-=1
-          if(el2.nombre==0)
-            cl.reduction.splice(cl.reduction.indexOf(el2),1)
-        }
-      })
-    })
-    addInPax(apinaAnyAmPax, cl)
-    await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
+
+    // await new_rdv.update_emp(req.params.id_rdv);
+    // //Nouvelle réduction
+    // let new_rdv_reduc = new_rdv.reduction
+    // let apinaAnyAmPax=differ(old_rdv_reduc.reduction, new_rdv_reduc)
+    // let alanaAnyAmPax=differ(new_rdv_reduc, old_rdv_reduc.reduction)
+
+    // // console.log("---pax update---", apinaAnyAmPax, alanaAnyAmPax);
+    // let cl= await client.findById(new_rdv.id_client)
+    // alanaAnyAmPax.map((el)=>{
+    //   cl.reduction.map((el2)=>{
+    //     if(el.toString()==el2.offre.toString()){
+    //       el2.nombre-=1
+    //       if(el2.nombre==0)
+    //         cl.reduction.splice(cl.reduction.indexOf(el2),1)
+    //     }
+    //   })
+    // })
+    // addInPax(apinaAnyAmPax, cl)
+    // await client.updateOne({_id:rendez_vous.id_client},{reduction:cl.reduction})
 
     return res.status(200).json("Coucou");
   } catch (error) {
