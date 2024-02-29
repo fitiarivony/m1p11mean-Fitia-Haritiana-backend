@@ -5,12 +5,19 @@ const Token = require('../models/token')
 const rdv = require('../models/rdv')
 const { default: mongoose } = require('mongoose')
 var router = express.Router()
+const crypto = require('crypto')
+
 // const Token = require('../models/token')
 
 /* GET home page. */
 
 router.post('/login', async (req, res) => {
   // console.log("niditra");
+
+  const sha1Hash = crypto.createHash('sha1')
+  sha1Hash.update(req.body.mdp)
+  req.body.mdp = sha1Hash.digest('hex')
+
   let tempEmp = new models.Employe({
     identifiant: req.body.identifiant,
     mdp: req.body.mdp
@@ -53,6 +60,11 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     await Token.authenticateAll(req.headers.authorization)
+
+    const sha1Hash = crypto.createHash('sha1')
+    sha1Hash.update(req.body.mdp)
+    req.body.mdp = sha1Hash.digest('hex')
+
     let tempEmp = new models.Employe({
       identifiant: req.body.identifiant,
       mdp: req.body.mdp,
