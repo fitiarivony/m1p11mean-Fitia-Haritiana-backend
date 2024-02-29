@@ -382,6 +382,7 @@ function overlap(a_start, a_end, b_start, b_end) {
 }
 function interieur_interval(a_start, a_end, b_start, b_end) {
   //A interieur de B
+  console.log("A:",a_start,a_end,"B",b_start,b_end);
   return a_start > b_start && a_end < b_end;
 }
 function in_horaire(date, horaire, duree) {
@@ -389,6 +390,7 @@ function in_horaire(date, horaire, duree) {
   farany.setMinutes(duree + farany.getMinutes());
   let begin = new Date(`${date.getFullYear()}-${('0'+(date.getMonth()+1)).slice(-2)}-${('0'+date.getDate()).slice(-2)}T${horaire.debut.toString()}`)
   let end = new Date(`${date.getFullYear()}-${('0'+(date.getMonth()+1)).slice(-2)}-${('0'+date.getDate()).slice(-2)}T${horaire.fin.toString()}`)
+   
   return interieur_interval(date, farany, begin, end);
 }
 
