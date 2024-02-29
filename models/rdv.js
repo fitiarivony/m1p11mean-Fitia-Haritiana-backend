@@ -382,7 +382,7 @@ function overlap(a_start, a_end, b_start, b_end) {
 }
 function interieur_interval(a_start, a_end, b_start, b_end) {
   //A interieur de B
-  console.log("A:",a_start,a_end,"B",b_start,b_end);
+  console.log("A:",a_start.toUTCString(),a_end.toUTCString(),"B",b_start.toUTCString(),b_end.toUTCString());
   return a_start > b_start && a_end < b_end;
 }
 function in_horaire(date, horaire, duree) {
