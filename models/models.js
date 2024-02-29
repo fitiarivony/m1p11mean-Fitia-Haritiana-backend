@@ -72,16 +72,16 @@ EmployeSchema.methods = {
     const res = await Employe.findOne({ identifiant: this.identifiant }).exec()
     if (res) {
       if (res.mdp === this.mdp) {
-        console.log('Login successful!')
+        // console.log('Login successful!')
         let token=await Token.generateToken(res._id,2)
-        console.log(token);
+        // console.log(token);
         return {token:token,admin:res};
       } else {
         // return 'Mot de passe éronné'
         throw new Error('Mot de passe eronné')
       }
     } else {
-      console.log('Login failed. Incorrect identifier or password.')
+      // console.log('Login failed. Incorrect identifier or password.')
       throw new Error('Login erroné')
     }
   }

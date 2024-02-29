@@ -37,7 +37,7 @@ app.use('/depense', DepenseRouter)
 app.use('/token',TokenRouter)
 
 app.listen(process.env.PORT, function () {
-  console.log('Example app listening on port ' + process.env.PORT)
+  // console.log('Example app listening on port ' + process.env.PORT)
   connection.openConnection()
 })
 const schedule = require('node-schedule')
@@ -52,4 +52,4 @@ const dailyTask = () => {
 const job = schedule.scheduleJob('0 6 * * *', dailyTask)
 
 // Log a message when the script starts
-console.log('Scheduled task started. Waiting for 6 am...')
+// console.log('Scheduled task started. Waiting for 6 am...')
