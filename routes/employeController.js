@@ -12,7 +12,7 @@ const crypto = require('crypto')
 /* GET home page. */
 
 router.post('/login', async (req, res) => {
-  // // console.log("niditra");
+  // // //console.log("niditra");
 
   const sha1Hash = crypto.createHash('sha1')
   sha1Hash.update(req.body.mdp)
@@ -31,8 +31,8 @@ router.post('/login', async (req, res) => {
     } else if (error.message === 'Mot de passe eronné') {
       return res.status(500).json('Mot de passe eronné')
     } else {
-      // console.log('other error')
-      // console.log(error.error)
+      // //console.log('other error')
+      // //console.log(error.error)
     }
   }
 })
@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
       genre: req.body.genre
     })
     tempEmp.save()
-    // console.log(tempEmp)
+    // //console.log(tempEmp)
 
     return res.status(200).json('Employé enregistré')
   } catch (error) {

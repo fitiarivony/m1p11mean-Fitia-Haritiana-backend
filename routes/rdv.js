@@ -29,7 +29,7 @@ function differ(arr1, arr2) {
 function addInPax(apinaAnyAmPax, cl){
   apinaAnyAmPax.map((el)=>{
     let tao=false
-    // // console.log(el.toString(), el2.offre.toString());
+    // // //console.log(el.toString(), el2.offre.toString());
     cl.reduction.map((el2)=>{
       if(el.toString()===el2.offre.toString()){
         tao=true
@@ -37,22 +37,22 @@ function addInPax(apinaAnyAmPax, cl){
       }
     })
     if(!tao){
-      // // console.log("tsy tao");
+      // // //console.log("tsy tao");
       cl.reduction.push({offre:el, nombre:1})
     }
   })
 }
 router.post("/", async function (req, res) {
-  // console.log("tonga");
+  // //console.log("tonga");
   try {
     const token = new Token();
     const log = await token.authenticate(req.headers.authorization, 3);
     let rendez_vous = req.body;
     rendez_vous.id_client = log.id_admin;
-    // // console.log(rendez_vous);
+    // // //console.log(rendez_vous);
     
     let new_rdv = new rdv(rendez_vous);
-    console.log(new_rdv);
+    //console.log(new_rdv);
     await new_rdv.save_emp();
 
     let cl= await client.findById(rendez_vous.id_client)
@@ -74,7 +74,7 @@ router.post("/", async function (req, res) {
   }
 });
 router.get("/prise-rdv/:id", async function (req, res) {
-  // // console.log("niditra prise rdv");
+  // // //console.log("niditra prise rdv");
   try {
     let data = {
       employe: await rdv.getEmpPref(req.params.id),
@@ -84,7 +84,7 @@ router.get("/prise-rdv/:id", async function (req, res) {
 
     return res.status(200).json(data);
   } catch (error) {
-    // console.log(error);
+    // //console.log(error);
     return res.status(500).json(error.message);
   }
 });
@@ -144,7 +144,7 @@ router.get("/today", async function (req, res) {
     let data = await rdv.getRdvEmp(list_rdv, emp.id_admin);
     let valiny = data.data;
     valiny.sort((a, b) => -b.date_rdv + a.date_rdv);
-    // // console.log(valiny);
+    // // //console.log(valiny);
 
     return res.status(200).json({ rdv: valiny, total: data.total });
   } catch (error) {
@@ -266,8 +266,8 @@ router.put("/:id_rdv", async function (req, res) {
     //recupération ancienne réduction
     let old_rdv_reduc = await rdv.findById(req.params.id_rdv).select("reduction").exec();
     let new_rdv = new rdv(rendez_vous);
-    console.log(rendez_vous);
-    console.log(new_rdv);
+    //console.log(rendez_vous);
+    //console.log(new_rdv);
 
 
     await new_rdv.update_emp(req.params.id_rdv);
@@ -276,7 +276,7 @@ router.put("/:id_rdv", async function (req, res) {
     let apinaAnyAmPax=differ(old_rdv_reduc.reduction, new_rdv_reduc)
     let alanaAnyAmPax=differ(new_rdv_reduc, old_rdv_reduc.reduction)
 
-    // console.log("---pax update---", apinaAnyAmPax, alanaAnyAmPax);
+    // //console.log("---pax update---", apinaAnyAmPax, alanaAnyAmPax);
     let cl= await client.findById(new_rdv.id_client)
     alanaAnyAmPax.map((el)=>{
       cl.reduction.map((el2)=>{
@@ -298,7 +298,7 @@ router.put("/:id_rdv", async function (req, res) {
 });
 
 router.put("/payer/:id_rdv", async function (req, res) {
-  // console.log("Payer");
+  // //console.log("Payer");
   try {
     const token = new Token();
     await token.authenticate(req.headers.authorization, 3);
@@ -307,7 +307,7 @@ router.put("/payer/:id_rdv", async function (req, res) {
       { $set: { paye: true } },
       { new: true }
     );
-    // console.log(vaovao);
+    // //console.log(vaovao);
     return res.status(200).json(vaovao);
   } catch (error) {
     console.error(error);
@@ -317,11 +317,11 @@ router.put("/payer/:id_rdv", async function (req, res) {
 
 router.get("/emp/temps-moyen", function (req, res) {
   // Exemple d'utilisation
-  // console.log("Tonga ato");
+  // //console.log("Tonga ato");
   rdv
     .temps_moyen_travail()
     .then((tempsMoyenTravail) => {
-      // console.log("Temps moyen de travail par employé :", tempsMoyenTravail);
+      // //console.log("Temps moyen de travail par employé :", tempsMoyenTravail);
       return res.status(200).json(tempsMoyenTravail);
     })
     .catch((err) => {

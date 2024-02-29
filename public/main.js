@@ -33,7 +33,7 @@ deleteButton.addEventListener('click', _ => {
     } 
     })
     .then(data => {
-        // console.log(data);
+        // //console.log(data);
         if (data === 'No quote to delete') {
             messageDiv.textContent = 'No Darth Vadar quote to delete'
             } else {

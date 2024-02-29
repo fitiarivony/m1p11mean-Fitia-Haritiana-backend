@@ -23,7 +23,7 @@ router.use(async function (req, res, next) {
 router.post("/", async (req, res) => {
   try {
     let manager = req.body;
-    // console.log(req.mdp_hash);
+    // //console.log(req.mdp_hash);
     const login = await Manager.findOne({
       identifiant: manager.identifiant,
     },{__v:0});
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
     
     return res.status(500).json({error:'Login erroné'});
   } catch (error) {
-    // console.log("Erreur");
+    // //console.log("Erreur");
     return res.status(500).json(error);
   }
 });

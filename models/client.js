@@ -42,7 +42,7 @@ clientSchema.statics.getReductions = async function (id) {
       populate: { path: 'offre', populate: { path: 'service' } }
     })
     .exec()
-  // // console.log(cl.reduction);
+  // // //console.log(cl.reduction);
   return cl.reduction
 }
 clientSchema.methods = {
@@ -54,7 +54,7 @@ clientSchema.methods = {
     ).exec()
     if (client) {
       if (client.mdp === this.mdp) {
-        // console.log('Login successful!!')
+        // //console.log('Login successful!!')
         let daty = new Date()
         daty.setHours(daty.getHours() + 1)
         const sha1Hash = crypto.createHash('sha1')
@@ -69,11 +69,11 @@ clientSchema.methods = {
         return { admin: client, token: token }
       } else {
         //return Mot de passe erroné!
-        // console.log("Mot de passe erroné!");
+        // //console.log("Mot de passe erroné!");
         throw new Error('Mot de passe erroné')
       }
     } else {
-      // console.log('Login failed')
+      // //console.log('Login failed')
       throw new Error('Login erroné')
     }
   }

@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
     // connection.closeConnection();
     return res.status(200).json(depenses);
   } catch (error) {
-    // console.log("Erreur");
+    // //console.log("Erreur");
     // Gestion des erreurs
     return res.status(500).json(error.message);
   }
@@ -23,7 +23,7 @@ router.post('/',async (req, res) => {
       const token = new Token();
       await token.authenticate(req.headers.authorization, 1);
       const { _id, ...body } = req.body;
-        // console.log(body);
+        // //console.log(body);
        let new_depense=new Depense(body);
        await  new_depense.save();
        return res.status(200).json(new_depense);

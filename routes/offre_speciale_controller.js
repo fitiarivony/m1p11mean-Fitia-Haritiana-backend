@@ -24,18 +24,18 @@ router.post('/', async (req, res) => {
       $addToSet: { reduction: nouveau }
     }
   )
-  // // console.log(clientVises);
+  // // //console.log(clientVises);
 
   const emails = await Client.find(
     { _id: { $in: clientVises } },
     { identifiant: 1, _id: 0 } // Project only the email field, exclude _id field
   )
-  // // console.log(emails);
+  // // //console.log(emails);
 
 
   let mailsOnly = []
   emails.map(email => mailsOnly.push(email.identifiant))
-  // // console.log(mailsOnly);
+  // // //console.log(mailsOnly);
   Mailer.sendSpecialOffer(
     mailsOnly,
     newOffre.nomOffreSpeciale,

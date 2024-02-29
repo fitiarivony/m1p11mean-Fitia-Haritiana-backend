@@ -47,15 +47,15 @@ router.get('/names', async (req, res) => {
     .json(await client.find({}).select('nom_client prenom_client').exec())
 })
 router.get('/histo/:id', async (req, res) => {
-  // // console.log("niditra");
+  // // //console.log("niditra");
   try {
-    // console.log(Token);
-    // // console.log("test");
+    // //console.log(Token);
+    // // //console.log("test");
     await Token.authenticate(req.headers.authorization, 3)
     let rdv = await Rdv.find({ id_client: req.params.id })
       .populate('rdv_service.id_service')
       .exec()
-    // console.log(rdv)
+    // //console.log(rdv)
     return res.status(200).json(rdv)
   } catch (error) {
     return res.status(500).json(error.message)
@@ -64,7 +64,7 @@ router.get('/histo/:id', async (req, res) => {
 router.get('/fav-emps/:id', async (req, res) => {
   try {
     await Token.authenticate(req.headers.authorization, 3)
-    // // console.log(req.params.id);
+    // // //console.log(req.params.id);
     let cl = await client.findById(req.params.id).exec()
     return res.status(200).json(cl.fav_employe)
   } catch (error) {
@@ -74,7 +74,7 @@ router.get('/fav-emps/:id', async (req, res) => {
 router.post('/fav-emps/:id', async (req, res) => {
   try {
     await Token.authenticate(req.headers.authorization, 3)
-    // // console.log(req.params.id);
+    // // //console.log(req.params.id);
     let cl = await client
       .findByIdAndUpdate(req.params.id, { $set: { fav_employe: req.body } })
       .exec()
@@ -87,7 +87,7 @@ router.post('/fav-emps/:id', async (req, res) => {
 router.get('/fav-serv/:id', async (req, res) => {
   try {
     await Token.authenticate(req.headers.authorization, 3)
-    // // console.log(req.params.id);
+    // // //console.log(req.params.id);
     let cl = await client.findById(req.params.id).exec()
     return res.status(200).json(cl.fav_service)
   } catch (error) {
@@ -97,7 +97,7 @@ router.get('/fav-serv/:id', async (req, res) => {
 router.post('/fav-serv/:id', async (req, res) => {
   try {
     await Token.authenticate(req.headers.authorization, 3)
-    // // console.log(req.params.id);
+    // // //console.log(req.params.id);
     let cl = await client
       .findByIdAndUpdate(req.params.id, { $set: { fav_service: req.body } })
       .exec()

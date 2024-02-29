@@ -75,7 +75,7 @@ rdvSchema.statics.get = function (conditions, colonnes) {
 rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
   let data = await Service.find();
   let newData = [];
-  // console.log("Emp=", id_employe);
+  //console.log("Emp=", id_employe);
   let total = 0;
   for (let rdv of list_rdv) {
     let date_rdv = rdv.date_rdv;
@@ -99,11 +99,11 @@ rdvSchema.statics.getRdvEmp = async function (list_rdv, id_employe) {
 
       date_rdv.setMinutes(date_rdv.getMinutes() + service.duree);
 
-      // console.log("Minutes to add", service.duree, "=" + date_rdv);
+      //console.log("Minutes to add", service.duree, "=" + date_rdv);
     }
     // newData.push(rdv_du);
   }
-  // console.log("Total=", total);
+  //console.log("Total=", total);
   return { data: newData, total: total };
 };
 
@@ -122,7 +122,7 @@ rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
           $gt: rdv_service.datedebut,
         },
       });
-      // console.log(rdv_daty);
+      //console.log(rdv_daty);
       if (rdv_daty.length != 0) throw new Error("L'employé n'est pas disponible");
     }
   }
@@ -139,7 +139,7 @@ rdvSchema.statics.check_dispo = async function (rdv_services, id_rdv) {
         $ne: id_rdv,
       },
     });
-    // console.log(rdv_daty);
+    //console.log(rdv_daty);
     if (rdv_daty.length != 0) throw new Error("L'employé n'est pas disponible");
   }
 };
@@ -166,7 +166,7 @@ rdvSchema.statics.getRdvTomorrow = async function () {
       .populate("id_client")
       .exec();
     // Log the appointments for tomorrow
-    // console.log("Appointments for tomorrow:", appointments);
+    //console.log("Appointments for tomorrow:", appointments);
     return appointments;
   } catch (error) {
     console.error("Error retrieving appointments:", error);
@@ -178,7 +178,7 @@ rdvSchema.statics.getRdvTomorrow = async function () {
 rdvSchema.statics.remindRdv = async function () {
   const Rdv = mongoose.model("rdv", rdvSchema);
   let tom = await Rdv.getRdvTomorrow();
-  // console.log(tom);
+  //console.log(tom);
   tom.map((rdv) => {
     let person = rdv.id_client;
     let mail = "<p>";
@@ -197,7 +197,7 @@ rdvSchema.statics.remindRdv = async function () {
     });
     mail = mail.slice(0, -2);
     mail = mail.concat("</p>");
-    // console.log(mail);
+    //console.log(mail);
 
     Mailer.sendSpecialOffer(
       [person.identifiant],
@@ -209,7 +209,7 @@ rdvSchema.statics.remindRdv = async function () {
 }
 rdvSchema.statics.getAvgRdv = async function () {
   const Rdv = mongoose.model('rdv', rdvSchema)
-  // // console.log('niditra')
+  // //console.log('niditra')
   let resMonth = await Rdv.aggregate([
     {
       $group: {
@@ -277,7 +277,7 @@ rdvSchema.methods = {
     }
   },
   check_horaire: async function (emps, services, id_rdv) {
-    // console.log("Check horaire");
+    //console.log("Check horaire");
     let id_reductions=this.reduction
     let reductions=await OffreSpeciale.find({ _id: { $in: id_reductions } }).exec()
     let date = new Date(this.date_rdv);
@@ -296,7 +296,7 @@ rdvSchema.methods = {
       );
       let inside_horaire = false;
       for (const horaire of horaires) {
-        // console.log("check horaire");
+        //console.log("check horaire");
         if (in_horaire(date, horaire, service.duree)) {
           inside_horaire = true;
           break;
@@ -322,21 +322,21 @@ rdvSchema.methods = {
         this.rdv_service[i].prix = service.prix;
         let prix=service.prix
         reductions.map((reduction) =>{
-          // console.log("compaison reduction",reduction.service,this.rdv_service[i].id_service);
+          //console.log("compaison reduction",reduction.service,this.rdv_service[i].id_service);
           if(reduction.service.toString()===this.rdv_service[i].id_service.toString()){
-            // // console.log("tafiditra réduction");
+            // //console.log("tafiditra réduction");
             if (this.rdv_service[i].pi === undefined) this.rdv_service[i].pi = prix
             if (this.rdv_service[i].reduc === undefined) this.rdv_service[i].reduc = 0
             this.rdv_service[i].reduc += reduction.reduction
             this.rdv_service[i].prix = (this.rdv_service[i].pi * (100 - this.rdv_service[i].reduc)) / 100
-            // // console.log(this.rdv_service[i].prix);
+            // //console.log(this.rdv_service[i].prix);
           }
         })
         //TODO: prix
-        // console.log("Date debut", date, "Date fin", fin);
-        // console.log(this);
+        //console.log("Date debut", date, "Date fin", fin);
+        //console.log(this);
       } else {
-        // console.log("Mifanitsaka date");
+        //console.log("Mifanitsaka date");
         throw new Error("L'employé n'est pas disponible");
       }
       date.setMinutes(service.duree + date.getMinutes());
@@ -357,7 +357,7 @@ rdvSchema.methods = {
           $gt: debut,
         },
       });
-      // console.log(rdv_daty);
+      //console.log(rdv_daty);
       return rdv_daty.length == 0;
     }
     let rdv_daty = await rdv_model.find({
@@ -372,7 +372,7 @@ rdvSchema.methods = {
         $ne: id_rdv,
       },
     });
-    // console.log(rdv_daty);
+    //console.log(rdv_daty);
     return rdv_daty.length == 0;
   },
 };
@@ -382,15 +382,20 @@ function overlap(a_start, a_end, b_start, b_end) {
 }
 function interieur_interval(a_start, a_end, b_start, b_end) {
   //A interieur de B
-  console.log("A:",a_start.toUTCString(),a_end.toUTCString(),"B",b_start.toUTCString(),b_end.toUTCString());
   return a_start > b_start && a_end < b_end;
 }
 function in_horaire(date, horaire, duree) {
   let farany = new Date(date);
   farany.setMinutes(duree + farany.getMinutes());
-  let begin = new Date(`${date.getFullYear()}-${('0'+(date.getMonth()+1)).slice(-2)}-${('0'+date.getDate()).slice(-2)}T${horaire.debut.toString()}`)
-  let end = new Date(`${date.getFullYear()}-${('0'+(date.getMonth()+1)).slice(-2)}-${('0'+date.getDate()).slice(-2)}T${horaire.fin.toString()}`)
-   
+  let debutHeureMinute = horaire.debut.split(":");
+  let finHeureMinute = horaire.fin.split(":");
+  let begin = new Date(date);
+  let end = new Date(date);
+  begin.setHours(parseInt(debutHeureMinute[0])-3);
+  begin.setMinutes(parseInt(debutHeureMinute[1]));
+
+  end.setHours(parseInt(finHeureMinute[0])-3);
+  end.setMinutes(parseInt(finHeureMinute[1]));
   return interieur_interval(date, farany, begin, end);
 }
 
@@ -475,7 +480,7 @@ rdvSchema.statics.getEmpPref = async function (id_client) {
     .then(async (result) => {
       const favoriteEmps = result.length === 0 ? [] : result[0].favoriteEmps; // Récupérer les services favoris du client
       // Recherche de tous les services non favoris
-      // // console.log(favoriteEmps);
+      // //console.log(favoriteEmps);
       let otherEmps = await Employe.find({
         _id: { $nin: favoriteEmps.map((service) => service._id) },
       });
@@ -602,8 +607,8 @@ rdvSchema.statics.benefice_mois = async function () {
     ]);
 
     let bilan = [];
-    // // console.log(result);
-    // // console.log(result[0].appointments.length);
+    // //console.log(result);
+    // //console.log(result[0].appointments.length);
     for (let resultat_mois of result) {
       let calcul = {
         recette: 0,
@@ -622,9 +627,9 @@ rdvSchema.statics.benefice_mois = async function () {
       }
       bilan.push(calcul)
     }
-    // // console.log(bilan);
+    // //console.log(bilan);
     let autre_depense = await Depense.depense_mois();
-    // // console.log(autre_depense);
+    // //console.log(autre_depense);
     for (const depense of autre_depense) {
       let dep = bilan.filter(
         (bil) => bil.mois === depense.month && depense.year == bil.annee
@@ -641,10 +646,10 @@ rdvSchema.statics.benefice_mois = async function () {
         };
         bilan.push(new_bilan);
       }
-      // // console.log(dep);
+      // //console.log(dep);
     }
-    // // console.log(autre_depense);
-    // // console.log(bilan);
+    // //console.log(autre_depense);
+    // //console.log(bilan);
     return bilan;
   } catch (error) {
     throw error;
@@ -688,7 +693,7 @@ rdvSchema.statics.filtre_rdv = async function (
     conditions["rdv_service.id_service"] = { $in: services };
   }
   conditions["rdv_service.id_employe"]= new mongoose.Types.ObjectId(id_employe);
-  // console.log(conditions);
+  //console.log(conditions);
   list_rdv = await Rdv.get(conditions, { __v: 0 });
  
   return list_rdv;
@@ -697,7 +702,7 @@ rdvSchema.statics.filtre_rdv = async function (
 rdvSchema.statics.filtreRdvEmp = async function (list_rdv, id_employe,services,servicesStringId) {
   let data = await Service.find();
   let newData = [];
-  // console.log("Emp=", id_employe);
+  //console.log("Emp=", id_employe);
   let total = 0;
   for (let rdv of list_rdv) {
     let rdv_du = [];
@@ -724,7 +729,7 @@ rdvSchema.statics.filtreRdvEmp = async function (list_rdv, id_employe,services,s
       }
     }
   }
-  // console.log("Total=", total);
+  //console.log("Total=", total);
   return { data: newData, total: total };
 };
 
